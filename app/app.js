@@ -96,7 +96,7 @@ async function downloadLog() {
     date.setHours(0, 0, 0, 0);
 
     // Download log
-    let logs = await app.collection.find({ username: "leo", timestamp: {$gt: date} });
+    let logs = await app.collection.find({ username: app.username, timestamp: {$gt: date} });
     app.logs = logs.sort();
     console.log("app.", app.logs);
 
@@ -148,6 +148,7 @@ function loadLocalStorage() {
         document.getElementById("key").value = key;
     }
     if (username) {
+        document.getElementById("users").value = username;
         app.username = username;
     }
 }
