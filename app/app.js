@@ -163,7 +163,15 @@ function updateTimeLabel() {
     }
 
     let timeLeft = app.maxHoursPerWeek - usedTime;
-    document.getElementById("timer").innerHTML = msToTime(timeLeft);
+    let timerElement = document.getElementById("timer");
+    timerElement.innerHTML = msToTime(timeLeft);
+
+    // Set background color as indicator
+    if (timeLeft > 0) {
+        timerElement.style = "background-color: chartreuse;";
+    } else {
+        timerElement.style = "background-color: crimson;";
+    }
 }
 
 function startTimer() {
