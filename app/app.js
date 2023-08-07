@@ -179,8 +179,11 @@ function stopTimer() {
 async function toggleTimer() {
     await downloadLog();
     
-    let lastLog = app.logs[app.logs.length - 1];
-    let newType = lastLog.type == LogType.START ? LogType.STOP : LogType.START;
+    let newType = LogType.START;
+    if (app.logs && app.logs.length > 0) {
+        let lastLog = app.logs[app.logs.length - 1];
+        newType = lastLog.type == LogType.START ? LogType.STOP : LogType.START;
+    }
 
     // INSERT NEW DOCUMENT!!
     let newLog = new Log(app.username, newType);
