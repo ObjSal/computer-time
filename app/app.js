@@ -225,13 +225,17 @@ function setupTimer() {
     }
 }
 
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 async function setupUI() {
     if (app.username) {
         // hide the login elements
         document.getElementById("login").style.display = "none";
         // show logged in div
         document.getElementById("loggedIn").style.display = "";
-        document.getElementById("username").innerHTML = "<b>Welcome " + app.username + "!</b>"
+        document.getElementById("username").innerHTML = "<b>Welcome " + capitalizeFirstLetter(app.username) + "!</b>"
     } else {
         document.getElementById("loggedIn").style.display = "none";
         document.getElementById("login").style.display = "";
