@@ -230,7 +230,7 @@ async function setupUI() {
         document.getElementById("login").style.display = "none";
         // show logged in div
         document.getElementById("loggedIn").style.display = "";
-        document.getElementById("username").innerHTML = "Welcome " + app.username + "!"
+        document.getElementById("username").innerHTML = "<b>Welcome " + app.username + "!</b>"
     } else {
         document.getElementById("loggedIn").style.display = "none";
         document.getElementById("login").style.display = "";

@@ -11,21 +11,32 @@
 <body>
     <!-- LOGIN START -->
     <div id="login">
+        <center>
         <h1>Login</h1>
-        <label for="appId">App Id:</label>
-        <input type="text" id="appId" name="appId"><br><br>
-        
-        <label for="key">key:</label>
-        <input type="text" id="key" name="key"><br><br>
-
-        <label for="users">User:</label>
-        <select name="users" id="users">
-            <option value="leo">leo</option>
-            <option value="nicky">nicky</option>
-            <option value="admin">admin</option>
-        </select>
-
-        <button onclick="login()">Login</button>
+        <table CELLSPACING=0>
+            <tr>
+                <td>App Id</td>
+                <td><input type="text" id="appId" name="appId" /></td>
+            </tr>
+            <tr>
+                <td>Login Key</td>
+                <td><input type="text" id="key" name="key" /></td>
+            </tr>
+            <tr>
+                <td>User</td>
+                <td>
+                    <select name="users" id="users">
+                        <option value="leo">leo</option>
+                        <option value="nicky">nicky</option>
+                        <option value="admin">admin</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2"><button id="loginButton" onclick="login()">LOGIN</button></td>
+            </tr>
+        </table>
+        </center>
     </div>
     <!-- LOGIN END -->
 
