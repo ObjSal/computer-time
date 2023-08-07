@@ -1,0 +1,8 @@
+th, td {
+    border-style: inset;
+    padding: 5px;
+}
+
+#timerButton {
+    width:300px;
+}
