@@ -5,14 +5,56 @@
     <meta name="viewport" content="width=800, initial-scale=1.0">
     <script src="https://unpkg.com/realm-web/dist/bundle.iife.js"></script>
     <script src="app/app.js" defer></script>
+    <style>
+        /* table {
+          border: 0px solid black;
+          border-radius: 10px;
+        } */
+        th, td {
+            border-style: inset;
+            padding: 5px;
+        }
+        </style>
     <title>Computer time</title>
 </head>
 <body>
-    <h1>Login</h1>
-    <label for="appId">App Id:</label>
-    <input type="text" id="appId" name="appId"><br><br>
-    <label for="key">key:</label>
-    <input type="text" id="key" name="key"><br><br>
-    <button onclick="login()">Login</button>
+    <!-- LOGIN START -->
+    <div id="login">
+        <h1>Login</h1>
+        <label for="appId">App Id:</label>
+        <input type="text" id="appId" name="appId"><br><br>
+        
+        <label for="key">key:</label>
+        <input type="text" id="key" name="key"><br><br>
+
+        <label for="users">User:</label>
+        <select name="users" id="users">
+            <option value="leo">leo</option>
+            <option value="nicky">nicky</option>
+            <option value="admin">admin</option>
+        </select>
+
+        <button onclick="login()">Login</button>
+    </div>
+    <!-- LOGIN END -->
+
+    <div id="loggedIn">
+        <center>
+            <table CELLSPACING=0>
+                <tr>
+                    <td id="username"></td>
+                    <td><button onclick="logout()">Logout</button></td>
+                </tr>
+                <tr>
+                    <td>Time taken so far this week:</td>
+                    <td id="timer"></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button id="timerButton" onclick="toggleTimer()" style="width:200px">START!</button></td>
+                </tr>
+            </table>
+        </center>
+    </div>
+
 </body>
 </html>
