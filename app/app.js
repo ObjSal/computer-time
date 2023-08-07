@@ -6,8 +6,9 @@ let app = {
     mongo: null,
     collection: null,
     logs: null,
-    totalTime: 0,
-    timer: null,
+    totalUsedTime: 0,
+    timerId: 0,
+    maxHoursPerWeek: 10*60*60000, // 10HRS;  min * milliseconds = hours
 };
 
 const MONGO = {
@@ -75,10 +76,11 @@ function logout() {
 
 function msToTime(duration) {
     // ref: https://stackoverflow.com/a/19700358
-    var milliseconds = Math.floor((duration % 1000) / 100),
-      seconds = Math.floor((duration / 1000) % 60),
-      minutes = Math.floor((duration / (1000 * 60)) % 60),
-      hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+
+    // let milliseconds = Math.floor((duration % 1000) / 100);
+    let seconds = Math.floor((duration / 1000) % 60);
+    let minutes = Math.floor((duration / (1000 * 60)) % 60);
+    let hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
   
     hours = (hours < 10) ? "0" + hours : hours;
     minutes = (minutes < 10) ? "0" + minutes : minutes;
@@ -115,7 +117,7 @@ async function downloadLog() {
             }
         }
     });
-    app.totalTime = totalTime;
+    app.totalUsedTime = totalTime;
 }
 
 function saveAppLogin() {
@@ -150,30 +152,32 @@ function loadLocalStorage() {
     }
 }
 
-let value = 0;
+function updateTimeLabel() {
+    let usedTime = app.totalUsedTime;
+    if (app.logs && app.logs.length > 0) {
+        let lastLog = app.logs[app.logs.length - 1];
+        if (lastLog.type == LogType.START) {
+            let date = new Date();
+            usedTime += (date.getTime() - lastLog.timestamp.getTime());
+        }
+    }
 
-function updateTimeLabel() { 
-    value += 1000;
-    document.getElementById("timer").innerHTML = msToTime(value);
-} 
+    let timeLeft = app.maxHoursPerWeek - usedTime;
+    document.getElementById("timer").innerHTML = msToTime(timeLeft);
+}
 
-async function startTimer(lastLog) {
-    stopTimer(); 
-    // value = 0; 
-    let date = new Date();
-    value = app.totalTime + (date.getTime() - lastLog.timestamp.getTime());
-    app.timer = setInterval(updateTimeLabel, 1000);
+function startTimer() {
+    stopTimer();
+    updateTimeLabel();
+    app.timerId = setInterval(updateTimeLabel, 1000);
     document.getElementById("timerButton").innerHTML = "STOP";
-} 
+}
 
 function stopTimer() {
-    clearInterval(app.timer); 
-    app.timer = null;
-    value = 0;
+    clearInterval(app.timerId);
+    updateTimeLabel();
+    app.timerId = 0;
     document.getElementById("timerButton").innerHTML = "START";
-    if (app.totalTime > 0) {
-        document.getElementById("timer").innerHTML = msToTime(app.totalTime);
-    }
 }
 
 async function toggleTimer() {
@@ -199,14 +203,14 @@ async function toggleTimer() {
     setupTimer();
 }
 
-async function setupTimer() {
+function setupTimer() {
     if (app.logs == null || app.logs.length == 0) {
         stopTimer();
         return;
     }
     let lastLog = app.logs[app.logs.length - 1];
     if (lastLog.type == LogType.START) {
-        await startTimer(lastLog);
+        startTimer();
     } else if (lastLog.type == LogType.STOP) {
         stopTimer();
     }
@@ -219,13 +223,12 @@ async function setupUI() {
         // show logged in div
         document.getElementById("loggedIn").style.display = "";
         document.getElementById("username").innerHTML = "Welcome " + app.username + "!"
-
     } else {
         document.getElementById("loggedIn").style.display = "none";
         document.getElementById("login").style.display = "";
     }
 
-    await setupTimer();
+    setupTimer();
 }
 
 function init() {
