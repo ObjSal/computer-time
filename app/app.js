@@ -197,7 +197,7 @@ async function toggleTimer() {
 }
 
 async function setupTimer() {
-    if (app.logs == null) {
+    if (app.logs == null || app.logs.length == 0) {
         stopTimer();
         return;
     }
