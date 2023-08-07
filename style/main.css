@@ -1,8 +1,14 @@
 th, td {
     border-style: inset;
     padding: 5px;
+    text-align: center;
 }
 
 #timerButton {
     width:300px;
+    height: 30px;
+}
+
+#logoutButton {
+    float: right;
 }
