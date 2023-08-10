@@ -165,7 +165,8 @@ function updateTimeLabel() {
 
     let timeLeft = app.maxHoursPerWeek - usedTime;
     let timerElement = document.getElementById("timer");
-    timerElement.innerHTML = msToTime(timeLeft);
+    let sign = timeLeft < 0 ? "-": "";
+    timerElement.innerHTML = sign + msToTime(Math.abs(timeLeft));
 
     // Set background color as indicator
     if (timeLeft > 0) {
