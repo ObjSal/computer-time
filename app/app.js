@@ -46,12 +46,14 @@ async function loginApiKey(apiKey) {
 }
   
 async function login() {
-    if (document.getElementById("appId").value == "" || document.getElementById("key").value == "") {
+    let appId = document.getElementById("appId").value;
+    let key = document.getElementById("key").value;
+    let username = document.getElementById("users").value;
+
+    if (appId == "" || key == "" || username == "") {
         await setupUI();
         return;
     }
-    let appId = document.getElementById("appId").value;
-    let key = document.getElementById("key").value;
 
     // initialize the app global instance
     app.realm = new Realm.App({ id: appId });
@@ -70,7 +72,13 @@ async function login() {
 }
 
 function logout() {
+    let appId = localStorage.getItem("appId");
+    let key = localStorage.getItem("key");
+    document.getElementById("users").value = "";
+    app.username = null;
     localStorage.clear();
+    localStorage.setItem("appId", appId);
+    localStorage.setItem("key", key);
     location.reload();
 }
 
@@ -120,7 +128,7 @@ async function downloadLog() {
     app.totalUsedTime = totalTime;
 }
 
-function saveAppLogin() {
+function saveAppLogin(saveUsername = true) {
     let appId = document.getElementById("appId").value;
     let key = document.getElementById("key").value;
     let username = document.getElementById("users").value;
