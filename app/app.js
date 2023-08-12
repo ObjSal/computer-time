@@ -32,7 +32,7 @@ class Log {
     }
 }
 
-async function loginApiKey(apiKey) {
+async function loginWithApiKey(apiKey) {
     // const credentials = Realm.Credentials.anonymous();
     const credentials = Realm.Credentials.apiKey(apiKey);
 
@@ -43,6 +43,20 @@ async function loginApiKey(apiKey) {
     console.assert(user.id === app.realm.currentUser.id);
 
     return user;
+}
+
+function refreshTokenValid() {
+    let currentUser = app.realm ? app.realm.currentUser : null;
+    if (currentUser && currentUser.isLoggedIn) {
+        let refreshTokenJWT = jwt_decode(currentUser.refreshToken);
+        // Expiration is unix epoch timestamps in seconds
+        let expiration = refreshTokenJWT.exp;
+        // multiply by 1,000 to convert to milliseconds
+        let expDate = new Date(expiration * 1000);
+        let now = new Date();
+        return expDate > now;
+    }
+    return false;
 }
   
 async function login() {
@@ -57,10 +71,12 @@ async function login() {
 
     // initialize the app global instance
     app.realm = new Realm.App({ id: appId });
-    let user = null;
 
     try {
-        user = await loginApiKey(key);
+        if (!refreshTokenValid()) {
+            // Login if the refresh token is not valid.
+            await loginWithApiKey(key);
+        }
         saveAppLogin();
         initMongo();
         await downloadLog();
@@ -72,14 +88,17 @@ async function login() {
 }
 
 function logout() {
-    let appId = localStorage.getItem("appId");
-    let key = localStorage.getItem("key");
+    localStorage.setItem("username", "");
     document.getElementById("users").value = "";
     app.username = null;
-    localStorage.clear();
-    localStorage.setItem("appId", appId);
-    localStorage.setItem("key", key);
-    location.reload();
+    let currentUser = app.realm ? app.realm.currentUser : null;
+    if (currentUser && currentUser.isLoggedIn) {
+        currentUser.logOut().then(() => {
+            location.reload();
+        });
+    } else {
+        location.reload();
+    }
 }
 
 function msToTime(duration) {
@@ -128,7 +147,7 @@ async function downloadLog() {
     app.totalUsedTime = totalTime;
 }
 
-function saveAppLogin(saveUsername = true) {
+function saveAppLogin() {
     let appId = document.getElementById("appId").value;
     let key = document.getElementById("key").value;
     let username = document.getElementById("users").value;
@@ -239,10 +258,10 @@ function capitalizeFirstLetter(string) {
 }
 
 async function setupUI() {
-    if (app.username) {
-        // hide the login elements
+    if (refreshTokenValid()) {
+        // Hide the login elements
         document.getElementById("login").style.display = "none";
-        // show logged in div
+        // Show logged in div
         document.getElementById("loggedIn").style.display = "";
         document.getElementById("username").innerHTML = "<b>Welcome " + capitalizeFirstLetter(app.username) + "!</b>"
     } else {
