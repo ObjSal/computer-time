@@ -2,7 +2,6 @@
 
 let app = {
     realm: null,
-    username: null,
     mongo: null,
     collection: null,
     logs: null,
@@ -23,18 +22,28 @@ const LogType ={
 };
 
 class Log {
-    constructor(username, type) {
+    constructor(type) {
         this.owner_id = app.realm.currentUser.id;
         this.timestamp = new Date();
         this.userAgent = navigator.userAgent;
-        this.username = username;
         this.type = type;
     }
 }
 
 async function loginWithApiKey(apiKey) {
-    // const credentials = Realm.Credentials.anonymous();
     const credentials = Realm.Credentials.apiKey(apiKey);
+
+    // Authenticate the user
+    const user = await app.realm.logIn(credentials);
+
+    // `app.realm.currentUser` updates to match the logged in user
+    console.assert(user.id === app.realm.currentUser.id);
+
+    return user;
+}
+
+async function loginWithEmail(email, password) {
+    const credentials = Realm.Credentials.emailPassword(email, password);
 
     // Authenticate the user
     const user = await app.realm.logIn(credentials);
@@ -60,27 +69,23 @@ function refreshTokenValid() {
 }
   
 async function login() {
-    let appId = document.getElementById("appId").value;
-    let key = document.getElementById("key").value;
-    let username = document.getElementById("users").value;
+    let appId = document.getElementById("loginAppId").value;
+    let email = document.getElementById("loginEmail").value;
+    let password = document.getElementById("loginPassword").value;
 
-    if (appId == "" || key == "" || username == "") {
-        await setupUI();
-        return;
+    // TODO: validate appId, email and password
+
+    // Re-initialize the app global instance with the new appId
+    if (app.realm == null || app.realm.id != appId) {
+        // This code is not tested as I only have one Realm AppID.
+        app.realm = new Realm.App({ id: appId });
     }
-
-    // initialize the app global instance
-    app.realm = new Realm.App({ id: appId });
+    // Save the AppId
+    localStorage.setItem("appId", appId);
 
     try {
-        if (!refreshTokenValid()) {
-            // Login if the refresh token is not valid.
-            await loginWithApiKey(key);
-        }
-        saveAppLogin();
-        initMongo();
-        await downloadLog();
-        await setupUI();
+        await loginWithEmail(email, password);
+        showMain();
     } catch (error) {
         console.error(error);
         alert(error.message);
@@ -88,9 +93,9 @@ async function login() {
 }
 
 function logout() {
-    localStorage.setItem("username", "");
-    document.getElementById("users").value = "";
-    app.username = null;
+    app.logs = null;
+    app.totalUsedTime = 0;
+    stopTimer();
     let currentUser = app.realm ? app.realm.currentUser : null;
     if (currentUser && currentUser.isLoggedIn) {
         currentUser.logOut().then(() => {
@@ -98,6 +103,30 @@ function logout() {
         });
     } else {
         location.reload();
+    }
+}
+
+async function register() {
+    let appId = document.getElementById("registerAppId").value;
+    let email = document.getElementById("registerEmail").value;
+    let password = document.getElementById("registerPassword").value;
+    
+    // Re-initialize the app global instance with the new appId
+    if (app.realm == null || app.realm.id != appId) {
+        // This code is not tested as I only have one Realm AppID.
+        app.realm = new Realm.App({ id: appId });
+    }
+    // Save the AppId
+    localStorage.setItem("appId", appId);
+
+    // TODO: validate appId, email and password
+
+    try {
+        await app.realm.emailPasswordAuth.registerUser({ email, password });
+        showConfirmEmail();
+    } catch (error) {
+        console.error(error);
+        alert(error.message);
     }
 }
 
@@ -123,9 +152,8 @@ async function downloadLog() {
     date.setHours(0, 0, 0, 0);
 
     // Download log
-    let logs = await app.collection.find({ username: app.username, timestamp: {$gt: date} });
+    let logs = await app.collection.find({ owner_id: app.realm.currentUser.id, timestamp: {$gt: date} });
     app.logs = logs.sort();
-    console.log("app.", app.logs);
 
     // Calculate time taken
     let totalTime = 0;
@@ -147,17 +175,6 @@ async function downloadLog() {
     app.totalUsedTime = totalTime;
 }
 
-function saveAppLogin() {
-    let appId = document.getElementById("appId").value;
-    let key = document.getElementById("key").value;
-    let username = document.getElementById("users").value;
-    localStorage.setItem("appId", appId);
-    localStorage.setItem("key", key);
-    localStorage.setItem("username", username);
-
-    loadLocalStorage();
-}
-
 function initMongo() {
     app.mongo = app.realm.currentUser.mongoClient(MONGO.CLUSTER_NAME);
     app.collection = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.COLLECTION_NAME);
@@ -165,18 +182,10 @@ function initMongo() {
 
 function loadLocalStorage() {
     let appId = localStorage.getItem("appId");
-    let key = localStorage.getItem("key");
-    let username = localStorage.getItem("username");
 
     if (appId) {
-        document.getElementById("appId").value = appId;
-    }
-    if (key) {
-        document.getElementById("key").value = key;
-    }
-    if (username) {
-        document.getElementById("users").value = username;
-        app.username = username;
+        document.getElementById("loginAppId").value = appId;
+        document.getElementById("registerAppId").value = appId;
     }
 }
 
@@ -227,22 +236,21 @@ async function toggleTimer() {
     }
 
     // INSERT NEW DOCUMENT!!
-    let newLog = new Log(app.username, newType);
+    let newLog = new Log(newType);
     const result = await app.collection.insertOne(newLog);
     console.log(result);
+    app.logs.push(newLog);
 
-    // Refetch the data
-    await downloadLog();
-    // manually add it instead <-- don't know why this doesn't work
-    // app.logs.push(newLog);
-
-    // Finally set the timer
     setupTimer();
 }
 
 function setupTimer() {
     if (app.logs == null || app.logs.length == 0) {
         stopTimer();
+        if (app.logs == null) {
+            // Download logs only when logs is null so we're not stuck in an infinite loop
+            downloadLog().then(() => setupTimer())
+        }
         return;
     }
     let lastLog = app.logs[app.logs.length - 1];
@@ -253,31 +261,88 @@ function setupTimer() {
     }
 }
 
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+function capitalizeFirstLetter(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-async function setupUI() {
-    if (refreshTokenValid()) {
-        // Hide the login elements
-        document.getElementById("login").style.display = "none";
-        // Show logged in div
-        document.getElementById("loggedIn").style.display = "";
-        document.getElementById("username").innerHTML = "<b>Welcome " + capitalizeFirstLetter(app.username) + "!</b>"
-    } else {
-        document.getElementById("loggedIn").style.display = "none";
-        document.getElementById("login").style.display = "";
-    }
+function showLogin() {
+    document.getElementById("login").style.display = "";
+}
 
+function showRegister() {
+    // Hide login elements
+    document.getElementById("login").style.display = "none";
+    // Show the register elements
+    document.getElementById("register").style.display = "";
+}
+
+function forgotPassword() {
+    // use the loginEmail field.
+    alert("implement me!!");
+}
+
+function showConfirmEmail() {
+    document.getElementById("register").style.display = "none";
+    document.getElementById("checkEmail").style.display = "";
+}
+
+function showMain() {
+    // Hide login elements
+    document.getElementById("login").style.display = "none";
+    // Show Main elements
+    document.getElementById("main").style.display = "";
+    document.getElementById("welcome").innerHTML = "<b>Welcome " + app.realm.currentUser.profile.email + "</b>"
+    // Initialize mongo client and collections
+    initMongo();
     setupTimer();
 }
 
+// Confirm email and automatically take user to the logged-in screen
+function confirm() {
+    let urlParams = new URLSearchParams(window.location.search);
+    let token = urlParams.get("token");
+    let tokenId = urlParams.get("tokenId");
+
+    // TODO: validate token and tokenId
+
+    app.realm.emailPasswordAuth.confirmUser({ token, tokenId }).then(() => {
+        // Remove the URL query params by redirecting to the root
+        window.location = "/";
+    });
+}
+
 function init() {
+    // Hide all the states
     document.getElementById("login").style.display = "none";
-    document.getElementById("loggedIn").style.display = "none";
+    document.getElementById("register").style.display = "none";
+    document.getElementById("checkEmail").style.display = "none";
+    document.getElementById("main").style.display = "none";
 
     loadLocalStorage();
-    login();
+
+    let appId = localStorage.getItem("appId");
+
+    if (appId == null || appId == "") {
+        showLogin();
+    } else {
+        // Initialize the app global instance
+        // TODO: check appId in login and register websites.
+        app.realm = new Realm.App({ id: appId });
+
+        if (refreshTokenValid()) {
+            showMain();
+        } else {
+            let urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has("register")) {
+                // Setup for registering
+            } else if (urlParams.has("confirm")) {
+                confirm();
+            } else {
+                // Logged out, or Refresh Token expired
+                showLogin();
+            }
+        }
+    }
 }
 
 init();

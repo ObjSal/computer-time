@@ -13,51 +13,74 @@
     <title>Computer time</title>
 </head>
 <body>
-    <!-- LOGIN START -->
+    
     <div id="login">
         <center>
-        <h1>Login</h1>
-        <table CELLSPACING=0>
-            <tr>
-                <td>App Id</td>
-                <td><input type="text" id="appId" name="appId" /></td>
-            </tr>
-            <tr>
-                <td>Login Key</td>
-                <td><input type="text" id="key" name="key" /></td>
-            </tr>
-            <tr>
-                <td>User</td>
-                <td>
-                    <select name="users" id="users">
-                        <option value=""></option>
-                        <option value="leo">leo</option>
-                        <option value="nicky">nicky</option>
-                        <option value="admin">admin</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2"><button id="loginButton" onclick="login()">LOGIN</button></td>
-            </tr>
-        </table>
+            <h1>Login</h1>
+            <table CELLSPACING=0>
+                <tr>
+                    <td>App Id</td>
+                    <td><input type="text" id="loginAppId" name="loginAppId" /></td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td><input type="text" id="loginEmail" name="loginEmail" /></td>
+                </tr>
+                <tr>
+                    <td>Password</td>
+                    <td><input type="password" id="loginPassword" name="loginPassword" /></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button class="bigButton" id="loginButton" onclick="login()">LOGIN</button></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button class="bigButton" id="forgotPasswordButton" onclick="forgotPassword()">Forgot Password</button></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button class="bigButton" id="showRegisterButton" onclick="showRegister()">Register</button></td>
+                </tr>
+            </table>
         </center>
     </div>
-    <!-- LOGIN END -->
 
-    <div id="loggedIn">
+    <div id="register">
+        <center>
+            <h1>Register</h1>
+            <table CELLSPACING=0>
+                <tr>
+                    <td>App Id</td>
+                    <td><input type="text" id="registerAppId" /></td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td><input type="text" id="registerEmail" /></td>
+                </tr>
+                <tr>
+                    <td>Password</td>
+                    <td><input type="password" id="registerPassword" /></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button class="bigButton" id="registerButton" onclick="register()">REGISTER</button></td>
+                </tr>
+            </table>
+        </center>
+    </div>
+
+    <div id="checkEmail"><center><h1>Check your Email</h1></center></div>
+
+    <div id="main">
         <button id="logoutButton" onclick="logout()">Logout</button>
         <center>
             <table CELLSPACING=0>
                 <tr>
-                    <td id="username" colspan="2"></td>
+                    <td id="welcome" colspan="2"></td>
                 </tr>
                 <tr>
                     <td>Time left:</td>
                     <td id="timer"></td>
                 </tr>
                 <tr>
-                    <td colspan="2"><button id="timerButton" onclick="toggleTimer()">START!</button></td>
+                    <td colspan="2"><button class="bigButton" id="timerButton" onclick="toggleTimer()">START!</button></td>
                 </tr>
             </table>
         </center>
