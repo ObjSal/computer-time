@@ -333,9 +333,7 @@ function init() {
             showMain();
         } else {
             let urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has("register")) {
-                // Setup for registering
-            } else if (urlParams.has("confirm")) {
+            if (urlParams.has("confirm")) {
                 confirm();
             } else {
                 // Logged out, or Refresh Token expired
