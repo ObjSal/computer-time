@@ -157,6 +157,10 @@ async function downloadLog() {
     let logs = await app.log_collection.find({ owner_id: app.realm.currentUser.id, timestamp: {$gt: date} });
     app.logs = logs.sort();
 
+    calculateTotalTime();
+}
+
+function calculateTotalTime() {
     // Calculate time taken
     let totalTime = 0;
     // Make sure that we start with a start log.
@@ -243,6 +247,8 @@ async function toggleTimer() {
     const result = await app.log_collection.insertOne(newLog);
     console.log(result);
     app.logs.push(newLog);
+
+    calculateTotalTime();
 
     setupTimer();
 }
