@@ -306,8 +306,8 @@ function confirm() {
     // TODO: validate token and tokenId
 
     app.realm.emailPasswordAuth.confirmUser({ token, tokenId }).then(() => {
-        // Remove the URL query params by redirecting to the root
-        window.location = "/";
+        // Remove the URL query params by redirecting to the pathname
+        window.location = window.location.pathname;
     });
 }
 
