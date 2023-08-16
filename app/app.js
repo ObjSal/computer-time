@@ -3,7 +3,8 @@
 let app = {
     realm: null,
     mongo: null,
-    collection: null,
+    log_collection: null,
+    user_data_collection: null,
     logs: null,
     totalUsedTime: 0,
     timerId: 0,
@@ -13,7 +14,8 @@ let app = {
 const MONGO = {
     CLUSTER_NAME: "mongodb-atlas",
     DATABASE_NAME: "computer-time",
-    COLLECTION_NAME: "log",
+    LOG_COLLECTION_NAME: "log",
+    USER_DATA_COLLECTION_NAME: "user_data"
 };
 
 const LogType ={
@@ -152,7 +154,7 @@ async function downloadLog() {
     date.setHours(0, 0, 0, 0);
 
     // Download log
-    let logs = await app.collection.find({ owner_id: app.realm.currentUser.id, timestamp: {$gt: date} });
+    let logs = await app.log_collection.find({ owner_id: app.realm.currentUser.id, timestamp: {$gt: date} });
     app.logs = logs.sort();
 
     // Calculate time taken
@@ -177,7 +179,8 @@ async function downloadLog() {
 
 function initMongo() {
     app.mongo = app.realm.currentUser.mongoClient(MONGO.CLUSTER_NAME);
-    app.collection = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.COLLECTION_NAME);
+    app.log_collection = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.LOG_COLLECTION_NAME);
+    app.user_data_collection = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.USER_DATA_COLLECTION_NAME);
 }
 
 function loadLocalStorage() {
@@ -237,7 +240,7 @@ async function toggleTimer() {
 
     // INSERT NEW DOCUMENT!!
     let newLog = new Log(newType);
-    const result = await app.collection.insertOne(newLog);
+    const result = await app.log_collection.insertOne(newLog);
     console.log(result);
     app.logs.push(newLog);
 
@@ -286,12 +289,55 @@ function showConfirmEmail() {
     document.getElementById("checkEmail").style.display = "";
 }
 
-function showMain() {
+async function saveUsername() {
+    let username = document.getElementById("username").value;
+
+    // TODO: validate username
+
+    initMongo();
+
+    if (app.realm.currentUser.customData.username == null) {
+        // Create the the user's custom data document
+        await app.user_data_collection.insertOne(
+            { 
+                owner_id: app.realm.currentUser.id,
+                username: username
+            },
+        );
+    } else {
+        // Update the user's custom data document
+        await app.user_data_collection.updateOne(
+            { owner_id: app.realm.currentUser.id },
+            { $set: { username: username } }
+        );
+    }
+
+    // Refresh the user's local customData property
+    await app.realm.currentUser.refreshCustomData();
+
+    showMain();
+}
+
+function showSetUsername() {
     // Hide login elements
     document.getElementById("login").style.display = "none";
+    document.getElementById("setUsername").style.display = "";
+}
+
+function showMain() {
+    if (app.realm.currentUser.customData.username == null) {
+        showSetUsername();
+        return;
+    }
+
+    // Hide login elements
+    document.getElementById("login").style.display = "none";
+    // Hide set username
+    document.getElementById("setUsername").style.display = "none";
+
     // Show Main elements
     document.getElementById("main").style.display = "";
-    document.getElementById("welcome").innerHTML = "<b>Welcome " + app.realm.currentUser.profile.email + "</b>"
+    document.getElementById("welcome").innerHTML = "<b>Welcome " + app.realm.currentUser.customData.username + "!</b>"
     // Initialize mongo client and collections
     initMongo();
     setupTimer();
@@ -317,6 +363,7 @@ function init() {
     document.getElementById("register").style.display = "none";
     document.getElementById("checkEmail").style.display = "none";
     document.getElementById("main").style.display = "none";
+    document.getElementById("setUsername").style.display = "none";
 
     loadLocalStorage();
 

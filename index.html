@@ -20,15 +20,15 @@
             <table CELLSPACING=0>
                 <tr>
                     <td>App Id</td>
-                    <td><input type="text" id="loginAppId" name="loginAppId" /></td>
+                    <td><input type="text" id="loginAppId" /></td>
                 </tr>
                 <tr>
                     <td>Email</td>
-                    <td><input type="text" id="loginEmail" name="loginEmail" /></td>
+                    <td><input type="text" id="loginEmail" /></td>
                 </tr>
                 <tr>
                     <td>Password</td>
-                    <td><input type="password" id="loginPassword" name="loginPassword" /></td>
+                    <td><input type="password" id="loginPassword" /></td>
                 </tr>
                 <tr>
                     <td colspan="2"><button class="bigButton" id="loginButton" onclick="login()">LOGIN</button></td>
@@ -67,6 +67,21 @@
     </div>
 
     <div id="checkEmail"><center><h1>Check your Email</h1></center></div>
+
+    <div id="setUsername">
+        <center>
+            <h1>Set A Username</h1>
+            <table CELLSPACING=0>
+                <tr>
+                    <td>Username</td>
+                    <td><input type="text" id="username" /></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button class="bigButton" id="saveUsernameButton" onclick="saveUsername()">SAVE</button></td>
+                </tr>
+            </table>
+        </center>
+    </div>
 
     <div id="main">
         <button id="logoutButton" onclick="logout()">Logout</button>
