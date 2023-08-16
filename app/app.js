@@ -383,6 +383,11 @@ function init() {
         app.realm = new Realm.App({ id: appId });
 
         if (refreshTokenValid()) {
+            // Hacky/Temp way to logout server users
+            if (app.realm.currentUser.profile.email == null) {
+                logout();
+                return;
+            }
             showMain();
         } else {
             let urlParams = new URLSearchParams(window.location.search);
