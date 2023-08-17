@@ -347,6 +347,30 @@ function showMain() {
     // Initialize mongo client and collections
     initMongo();
     setupTimer();
+
+    if (app.realm.currentUser.customData.isGlobalAdmin) {
+        showAdmin();
+    }
+}
+
+function showAdmin() {
+    document.getElementById("admin").style.display = "";
+}
+
+// Old logs were created using a single key as the owner_id and
+// a unique username to distinguish between users.
+// Use the username field to find and fix the owner_id
+async function fixOldDataUsername() {
+    let username = document.getElementById("fixUsername").value;
+
+    const userData = await app.user_data_collection.findOne({ username: username });
+    
+    await app.log_collection.updateMany(
+        { username: username },
+        { $set: { owner_id: userData.owner_id } }
+    );
+
+    alert("Completed");
 }
 
 // Confirm email and automatically take user to the logged-in screen
@@ -370,6 +394,7 @@ function init() {
     document.getElementById("checkEmail").style.display = "none";
     document.getElementById("main").style.display = "none";
     document.getElementById("setUsername").style.display = "none";
+    document.getElementById("admin").style.display = "none";
 
     loadLocalStorage();
 
