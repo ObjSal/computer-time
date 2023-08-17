@@ -69,19 +69,20 @@ function refreshTokenValid() {
     }
     return false;
 }
-  
+
 async function login() {
     let appId = document.getElementById("loginAppId").value;
     let email = document.getElementById("loginEmail").value;
     let password = document.getElementById("loginPassword").value;
 
-    // TODO: validate appId, email and password
+    // TODO(sal): Validate appId, email and password
 
     // Re-initialize the app global instance with the new appId
     if (app.realm == null || app.realm.id != appId) {
         // This code is not tested as I only have one Realm AppID.
         app.realm = new Realm.App({ id: appId });
     }
+
     // Save the AppId
     localStorage.setItem("appId", appId);
 
@@ -112,7 +113,9 @@ async function register() {
     let appId = document.getElementById("registerAppId").value;
     let email = document.getElementById("registerEmail").value;
     let password = document.getElementById("registerPassword").value;
-    
+
+    // TODO(sal): validate appId, email and password
+
     // Re-initialize the app global instance with the new appId
     if (app.realm == null || app.realm.id != appId) {
         // This code is not tested as I only have one Realm AppID.
@@ -120,8 +123,6 @@ async function register() {
     }
     // Save the AppId
     localStorage.setItem("appId", appId);
-
-    // TODO: validate appId, email and password
 
     try {
         await app.realm.emailPasswordAuth.registerUser({ email, password });
@@ -139,11 +140,11 @@ function msToTime(duration) {
     let seconds = Math.floor((duration / 1000) % 60);
     let minutes = Math.floor((duration / (1000 * 60)) % 60);
     let hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-  
+
     hours = (hours < 10) ? "0" + hours : hours;
     minutes = (minutes < 10) ? "0" + minutes : minutes;
     seconds = (seconds < 10) ? "0" + seconds : seconds;
-  
+
     return hours + ":" + minutes + ":" + seconds; // + "." + milliseconds;
   }
 
@@ -216,19 +217,21 @@ function timeSinceLastLogStarted(logs) {
     return 0;
 }
 
+function backgroundColorForValue(value) {
+    if (value > 0) {
+        return "background-color: chartreuse;";
+    } else {
+        return "background-color: crimson;";
+    }
+}
+
 function updateTimeLabel() {
     let usedTime = app.totalUsedTime + timeSinceLastLogStarted(app.logs);
     let timeLeft = app.maxHoursPerWeek - usedTime;
     let timerElement = document.getElementById("timer");
     let sign = timeLeft < 0 ? "-": "";
     timerElement.innerHTML = sign + msToTime(Math.abs(timeLeft));
-
-    // Set background color as indicator
-    if (timeLeft > 0) {
-        timerElement.style = "background-color: chartreuse;";
-    } else {
-        timerElement.style = "background-color: crimson;";
-    }
+    timerElement.style = backgroundColorForValue(timeLeft);
 }
 
 function startTimer() {
@@ -247,19 +250,18 @@ function stopTimer() {
 
 async function toggleTimer() {
     await downloadLogsForCurrentUser();
-    
+
     let newType = LogType.START;
     if (app.logs && app.logs.length > 0) {
         let lastLog = app.logs[app.logs.length - 1];
         newType = lastLog.type == LogType.START ? LogType.STOP : LogType.START;
     }
 
-    // INSERT NEW DOCUMENT!!
+    // TODO(sal): NOT SAFE! Move to a backend function
     let newLog = new Log(newType);
-    const result = await app.log_collection.insertOne(newLog);
-    console.log(result);
-    app.logs.push(newLog);
+    await app.log_collection.insertOne(newLog);
 
+    app.logs.push(newLog);
     app.totalUsedTime = calculateTotalCompletedTime(app.logs);
 
     setupTimer();
@@ -310,14 +312,14 @@ function showConfirmEmail() {
 async function saveUsername() {
     let username = document.getElementById("username").value;
 
-    // TODO: validate username
+    // TODO(sal): Validate username
 
     initMongo();
 
     if (app.realm.currentUser.customData.username == null) {
         // Create the the user's custom data document
         await app.user_data_collection.insertOne(
-            { 
+            {
                 owner_id: app.realm.currentUser.id,
                 username: username
             },
@@ -352,7 +354,6 @@ function showMain() {
     document.getElementById("login").style.display = "none";
     // Hide set username
     document.getElementById("setUsername").style.display = "none";
-
     // Show Main elements
     document.getElementById("main").style.display = "";
     document.getElementById("welcome").innerHTML = "<b>Welcome " + app.realm.currentUser.customData.username + "!</b>"
@@ -379,7 +380,7 @@ async function showAdmin() {
         let nameCell = row.insertCell(-1);
         let timeCell = row.insertCell(-1);
         let statusCell = row.insertCell(-1);
-        
+
         nameCell.innerHTML = user.username;
 
         let logs = await downloadLogs(user.owner_id);
@@ -387,32 +388,27 @@ async function showAdmin() {
         let usedTime = totalTime + timeSinceLastLogStarted(logs);
         let timeLeft = app.maxHoursPerWeek - usedTime;
         let sign = timeLeft < 0 ? "-": "";
-
-        // Set background color as indicator
-        if (timeLeft > 0) {
-            timeCell.style = "background-color: chartreuse;";
-        } else {
-            timeCell.style = "background-color: crimson;";
-        }
-
+        timeCell.style = backgroundColorForValue(timeLeft);
         timeCell.innerHTML = sign + msToTime(Math.abs(timeLeft));
 
-        let lastStatus = "Stop"
+        let lastType = LogType.STOP;
         if (logs && logs.length > 0) {
-            lastStatus = logs[logs.length -1].type;
+            lastType = logs[logs.length -1].type;
         }
-        statusCell.innerHTML = lastStatus;
+        statusCell.innerHTML = lastType;
     }
 }
 
 // Old logs were created using a single key as the owner_id and
 // a unique username to distinguish between users.
 // Use the username field to find and fix the owner_id
+// NOTE: this function only works if an admin executes it.
+// TODO(sal): Remove, keeping it as a snippet for now.
 async function fixOldDataUsername() {
     let username = document.getElementById("fixUsername").value;
 
     const userData = await app.user_data_collection.findOne({ username: username });
-    
+
     await app.log_collection.updateMany(
         { username: username },
         { $set: { owner_id: userData.owner_id } }
@@ -421,13 +417,12 @@ async function fixOldDataUsername() {
     alert("Completed");
 }
 
-// Confirm email and automatically take user to the logged-in screen
-function confirm() {
+function confirmUser() {
     let urlParams = new URLSearchParams(window.location.search);
     let token = urlParams.get("token");
     let tokenId = urlParams.get("tokenId");
 
-    // TODO: validate token and tokenId
+    // TODO(sal): Validate token and tokenId
 
     app.realm.emailPasswordAuth.confirmUser({ token, tokenId }).then(() => {
         // Remove the URL query params by redirecting to the pathname
@@ -452,20 +447,14 @@ function init() {
         showLogin();
     } else {
         // Initialize the app global instance
-        // TODO: check appId in login and register websites.
         app.realm = new Realm.App({ id: appId });
 
         if (refreshTokenValid()) {
-            // Hacky/Temp way to logout server users
-            if (app.realm.currentUser.profile.email == null) {
-                logout();
-                return;
-            }
             showMain();
         } else {
             let urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has("confirm")) {
-                confirm();
+                confirmUser();
             } else {
                 // Logged out, or Refresh Token expired
                 showLogin();
