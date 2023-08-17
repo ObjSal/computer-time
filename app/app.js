@@ -147,26 +147,33 @@ function msToTime(duration) {
     return hours + ":" + minutes + ":" + seconds; // + "." + milliseconds;
   }
 
-async function downloadLog() {
+async function downloadLogs(ownerId) {
     // Set to Monday of this week
     var date = new Date();
     date.setDate(date.getDate() - (date.getDay() + 6) % 7);
     date.setHours(0, 0, 0, 0);
 
     // Download log
-    let logs = await app.log_collection.find({ owner_id: app.realm.currentUser.id, timestamp: {$gt: date} });
-    app.logs = logs.sort();
-
-    calculateTotalTime();
+    let logs = await app.log_collection.find({ owner_id: ownerId, timestamp: {$gt: date} });
+    return logs.sort();
 }
 
-function calculateTotalTime() {
+async function downloadLogsForCurrentUser() {
+    app.logs = await downloadLogs(app.realm.currentUser.id);
+    app.totalUsedTime = calculateTotalCompletedTime(app.logs);
+}
+
+function calculateTotalCompletedTime(logs) {
+    if (logs == null) {
+        return 0;
+    }
+
     // Calculate time taken
     let totalTime = 0;
     // Make sure that we start with a start log.
     let startFound = false;
     let startDate = null;
-    app.logs.forEach(log => {
+    logs.forEach(log => {
         if (startFound == false && log.type == LogType.START) {
             startFound = true;
         }
@@ -178,7 +185,7 @@ function calculateTotalTime() {
             }
         }
     });
-    app.totalUsedTime = totalTime;
+    return totalTime;
 }
 
 function initMongo() {
@@ -196,16 +203,21 @@ function loadLocalStorage() {
     }
 }
 
-function updateTimeLabel() {
-    let usedTime = app.totalUsedTime;
-    if (app.logs && app.logs.length > 0) {
-        let lastLog = app.logs[app.logs.length - 1];
+// Returns the time lapse since the last log was started
+// If the last log is stopped then it returns 0
+function timeSinceLastLogStarted(logs) {
+    if (logs && logs.length > 0) {
+        let lastLog = logs[logs.length - 1];
         if (lastLog.type == LogType.START) {
             let date = new Date();
-            usedTime += (date.getTime() - lastLog.timestamp.getTime());
+            return (date.getTime() - lastLog.timestamp.getTime());
         }
     }
+    return 0;
+}
 
+function updateTimeLabel() {
+    let usedTime = app.totalUsedTime + timeSinceLastLogStarted(app.logs);
     let timeLeft = app.maxHoursPerWeek - usedTime;
     let timerElement = document.getElementById("timer");
     let sign = timeLeft < 0 ? "-": "";
@@ -234,7 +246,7 @@ function stopTimer() {
 }
 
 async function toggleTimer() {
-    await downloadLog();
+    await downloadLogsForCurrentUser();
     
     let newType = LogType.START;
     if (app.logs && app.logs.length > 0) {
@@ -248,7 +260,7 @@ async function toggleTimer() {
     console.log(result);
     app.logs.push(newLog);
 
-    calculateTotalTime();
+    app.totalUsedTime = calculateTotalCompletedTime(app.logs);
 
     setupTimer();
 }
@@ -258,7 +270,7 @@ function setupTimer() {
         stopTimer();
         if (app.logs == null) {
             // Download logs only when logs is null so we're not stuck in an infinite loop
-            downloadLog().then(() => setupTimer())
+            downloadLogsForCurrentUser().then(() => setupTimer())
         }
         return;
     }
@@ -353,8 +365,44 @@ function showMain() {
     }
 }
 
-function showAdmin() {
+async function showAdmin() {
     document.getElementById("admin").style.display = "";
+    let timesTable = document.getElementById("times");
+
+    const users = await app.user_data_collection.find(
+        { },
+        { username: 1, owner_id: 1 }
+    );
+
+    for (const user of users) {
+        let row = timesTable.insertRow(-1);
+        let nameCell = row.insertCell(-1);
+        let timeCell = row.insertCell(-1);
+        let statusCell = row.insertCell(-1);
+        
+        nameCell.innerHTML = user.username;
+
+        let logs = await downloadLogs(user.owner_id);
+        let totalTime = calculateTotalCompletedTime(logs)
+        let usedTime = totalTime + timeSinceLastLogStarted(logs);
+        let timeLeft = app.maxHoursPerWeek - usedTime;
+        let sign = timeLeft < 0 ? "-": "";
+
+        // Set background color as indicator
+        if (timeLeft > 0) {
+            timeCell.style = "background-color: chartreuse;";
+        } else {
+            timeCell.style = "background-color: crimson;";
+        }
+
+        timeCell.innerHTML = sign + msToTime(Math.abs(timeLeft));
+
+        let lastStatus = "Stop"
+        if (logs && logs.length > 0) {
+            lastStatus = logs[logs.length -1].type;
+        }
+        statusCell.innerHTML = lastStatus;
+    }
 }
 
 // Old logs were created using a single key as the owner_id and
