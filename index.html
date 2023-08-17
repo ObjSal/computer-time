@@ -7,11 +7,15 @@
     <script src="https://unpkg.com/realm-web/dist/bundle.iife.js"></script>
     <!-- https://github.com/auth0/jwt-decode/tree/main -->
     <script src="lib/jwt-decode.js"></script>
+    <script
+        src="https://unpkg.com/webln@0.3.2/dist/webln.min.js"
+        integrity="sha384-MpjpvOQqXz9nCoLUS/sR0bhLwGYuNPMOBN50jsqhnqAzDq0GiOI0u6oC5fHitzI2"
+        crossorigin="anonymous"></script>
     <script src="app/app.js" defer></script>
     <title>Computer time</title>
 </head>
 <body>
-    
+
     <div id="login">
         <center>
             <h1>Login</h1>
@@ -115,7 +119,7 @@
                     <!-- <td><button class="bigButton" onclick="fixOldDataUsername()">Fix old data username</button></td><td><input type="text" id="fixUsername" placeholder="username" /></td> -->
                 </tr>
             </table>
-            
+
             <br />
 
             <table id="times" CELLSPACING=0>
