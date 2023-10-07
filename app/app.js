@@ -10,8 +10,14 @@ let app = {
     timerId: 0,
     maxHoursPerWeek: 10*60*60000, // 10HRS;  min * milliseconds = hours
 
+    // Tasks
+    tasks_collection: null,
+    tasks: null,
+
     // Temp helper globals
-    temp_qrcode_dataURL: null
+    temp_qrcode_dataURL: null,
+    temp_qrcode_base64: null,
+    temp_qrcode_hex: null
 };
 
 const MONGO = {
@@ -38,8 +44,10 @@ class Log {
 
 const TaskStatus = {
     OPEN: "Open",
+    STARTED: "Started",
     COMPLETED: "Completed",
-    HIDDEN: "Hidden"
+    CLAIMED: "Claimed",
+    CANCELED: "Canceled"
 }
 
 class Task {
@@ -57,13 +65,125 @@ class Task {
 async function createTask() {
     let desc = document.getElementById("task_description").value;
     let sats = parseInt(document.getElementById("task_reward_sats").value);
+    // TODO(sal): upload as binary, ask on forums how to do this from MondoDB Web SDK.
     let qrcode = app.temp_qrcode_dataURL;
+    // https://www.mongodb.com/docs/manual/reference/method/Binary.createFromBase64/
+    // let qrcode = Realm.BSON.Binary.createFromBase64(app.temp_qrcode_base64);
+    // https://www.mongodb.com/docs/manual/reference/method/Binary.createFromHexString/
+    // let qrcode = Realm.BSON.Binary.createFromHexString(app.temp_qrcode_hex);
+
 
     let newTask = new Task(desc, sats, qrcode);
 
     // TODO(sal): Not safe, use backend functions.
     //            storing image as dataURL in the DB :/
-    await app.tasks.insertOne(newTask);
+    //            image/qrcode is also not protected
+    await app.tasks_collection.insertOne(newTask);
+}
+
+async function downloadTasks() {
+    // Set to Monday of this week
+    let date = new Date();
+    date.setDate(date.getDate() - (date.getDay() + 6) % 7);
+    date.setHours(0, 0, 0, 0);
+
+    // Download tasks that are open, started and completed
+    // I can filter out tasks that  have been started by other others, but I want to show them to other users.
+    // This is still not secure because the QR Codes are always downloaded to local cache
+    let tasks = await app.tasks_collection.find({ status: {$in: [TaskStatus.OPEN, TaskStatus.STARTED, TaskStatus.COMPLETED]} });
+    return tasks.sort();
+}
+
+function showTasks() {
+    let tasksTable = document.getElementById("tasks");
+
+    for (const task of app.tasks) {
+        let row = tasksTable.insertRow(-1);
+        let dateCell = row.insertCell(-1);
+        let satsCell = row.insertCell(-1);
+        let descriptionCell = row.insertCell(-1);
+        let actionCell = row.insertCell(-1);
+
+        actionCell.id = task._id;
+        dateCell.innerHTML = task.timestamp.toLocaleDateString();
+        satsCell.innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(task.sats);
+        descriptionCell.innerHTML = task.description;
+        if (task.status == TaskStatus.OPEN) {
+            actionCell.innerHTML = '<button onclick=\'startTask("' + task._id + '")\'>Start</button>';
+        } else if (task.status == TaskStatus.STARTED) {
+            if (task.owner_id == app.realm.currentUser.id) {
+                actionCell.innerHTML = '<button onclick=\'finishTask("' + task._id + '")\'>Finish</button>' + '<br>' +
+                    '<button onclick=\'cancelTask("' + task._id + '")\'>Cancel</button>';
+            } else {
+                actionCell.innerHTML = 'Started';
+            }
+        } else if (task.status == TaskStatus.COMPLETED) {
+            if (task.owner_id == app.realm.currentUser.id) {
+                actionCell.innerHTML = '<button onclick=\'claimRewardTask("' + task._id + '")\'>Show Reward!</button>';
+            } else {
+                actionCell.innerHTML = 'Completed';
+            }
+        }
+    }
+}
+
+async function startTask(taskId) {
+    await app.tasks_collection.updateOne(
+        { _id: new Realm.BSON.ObjectID(taskId) },
+        { $set: {
+            status: TaskStatus.STARTED,
+            owner_id: app.realm.currentUser.id
+        }}
+    );
+
+    // TODO(sal): do proper updating of table and cached collection
+    location.reload();
+}
+
+async function finishTask(taskId) {
+    console.log('Finish Task', taskId);
+    await app.tasks_collection.updateOne(
+        { _id: new Realm.BSON.ObjectID(taskId) },
+        { $set: {
+                status: TaskStatus.COMPLETED
+            }}
+    );
+
+    // TODO(sal): do proper updating of table and cached collection
+    location.reload();
+}
+
+async function cancelTask(taskId) {
+    await app.tasks_collection.updateOne(
+        { _id: new Realm.BSON.ObjectID(taskId) },
+        { $set: {
+                status: TaskStatus.OPEN,
+                owner_id: null
+            }}
+    );
+
+    // TODO(sal): do proper updating of table and cached collection
+    location.reload();
+}
+
+async function claimRewardTask(taskId) {
+    let task = app.tasks.find((item)=>  item._id.toString() == taskId );
+    let actionCell = document.getElementById(taskId);
+    actionCell.innerHTML = '<img src="' + task.qrcode + '"></img>';
+
+    // Enable the code below if we want to hide the claimed rewards
+
+    // await app.tasks_collection.updateOne(
+    //     { _id: new Realm.BSON.ObjectID(taskId) },
+    //     { $set: {
+    //             status: TaskStatus.CLAIMED
+    //         }}
+    // );
+}
+
+async function setupTasks() {
+    app.tasks = await downloadTasks();
+    showTasks();
 }
 
 function resizeImage(dataURL, type, width, height, callback) {
@@ -85,6 +205,18 @@ function resizeImage(dataURL, type, width, height, callback) {
     img.src = dataURL;
 }
 
+function base64ToHex(str) {
+    // Reference: https://stackoverflow.com/a/39460727/877225
+    // TODO(sal): review code.
+    const raw = atob(str);
+    let result = '';
+    for (let i = 0; i < raw.length; i++) {
+        const hex = raw.charCodeAt(i).toString(16);
+        result += (hex.length === 2 ? hex : '0' + hex);
+    }
+    return result.toUpperCase();
+}
+
 function loadTaskQRCodeImage(element) {
     let file = element.files[0];
     let reader = new FileReader();
@@ -94,6 +226,8 @@ function loadTaskQRCodeImage(element) {
             // console.log(dataURL);
             // document.getElementById("test").src = dataURL;
             app.temp_qrcode_dataURL = dataURL;
+            // app.temp_qrcode_base64 = dataURL.split(';base64,')[1];
+            // app.temp_qrcode_hex = base64ToHex(app.temp_qrcode_base64);
         });
     }
     reader.readAsDataURL(file);
@@ -164,6 +298,7 @@ async function login() {
 
 function logout() {
     app.logs = null;
+    app.tasks = null;
     app.totalUsedTime = 0;
     stopTimer();
     let currentUser = app.realm ? app.realm.currentUser : null;
@@ -217,7 +352,7 @@ function msToTime(duration) {
 
 async function downloadLogs(ownerId) {
     // Set to Monday of this week
-    var date = new Date();
+    let date = new Date();
     date.setDate(date.getDate() - (date.getDay() + 6) % 7);
     date.setHours(0, 0, 0, 0);
 
@@ -259,7 +394,7 @@ function calculateTotalCompletedTime(logs) {
 function initMongo() {
     app.mongo = app.realm.currentUser.mongoClient(MONGO.CLUSTER_NAME);
     app.log_collection = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.LOG_COLLECTION_NAME);
-    app.tasks = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.TASKS_COLLECTION_NAME);
+    app.tasks_collection = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.TASKS_COLLECTION_NAME);
     app.user_data_collection = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.USER_DATA_COLLECTION_NAME);
 }
 
@@ -428,6 +563,7 @@ function showMain() {
     // Initialize mongo client and collections
     initMongo();
     setupTimer();
+    setupTasks();
 
     if (app.realm.currentUser.customData.isGlobalAdmin) {
         showAdmin();
