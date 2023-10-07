@@ -91,7 +91,7 @@ async function downloadTasks() {
     // I can filter out tasks that  have been started by other others, but I want to show them to other users.
     // This is still not secure because the QR Codes are always downloaded to local cache
     let tasks = await app.tasks_collection.find({ status: {$in: [TaskStatus.OPEN, TaskStatus.STARTED, TaskStatus.COMPLETED]} });
-    return tasks.sort();
+    return tasks.reverse();
 }
 
 function showTasks() {
