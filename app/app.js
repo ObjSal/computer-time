@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 let app = {
     realm: null,
@@ -18,7 +18,7 @@ const MONGO = {
     USER_DATA_COLLECTION_NAME: "user_data"
 };
 
-const LogType ={
+const LogType = {
     START: "Start",
     STOP: "Stop"
 };
@@ -29,6 +29,23 @@ class Log {
         this.timestamp = new Date();
         this.userAgent = navigator.userAgent;
         this.type = type;
+    }
+}
+
+const TaskStatus = {
+    OPEN: "Open",
+    COMPLETED: "Completed",
+    HIDDEN: "Hidden"
+}
+
+class Task {
+    constructor(desc, sats, qrcode, status = TaskStatus.OPEN) {
+        this.timestamp = new Date();
+        this.description = desc;
+        this.reward_sats = sats;
+        this.reward_qrcode = qrcode;
+        this.status = status;
+        this.assignee = null;
     }
 }
 
