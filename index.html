@@ -145,9 +145,9 @@
                 </tr>
                 <tr bgcolor="#faebd7">
                     <td><!-- Date --></td>
-                    <td><input type="text" id="description" /></td>
-                    <td><input type="text" id="reward_sats" /></td>
-                    <td><input type="file" id="reward_qrcode" accept="image/png, image/jpeg" /></td>
+                    <td><input type="text" id="task_description" /></td>
+                    <td><input type="text" id="task_reward_sats" /></td>
+                    <td><input type="file" id="task_reward_qrcode" accept="image/png, image/jpeg" onchange="loadTaskQRCodeImage(this)" /></td>
                     <td><button id="createTask" onclick="createTask()">Create</button></td>
                 </tr>
             </table>
@@ -162,6 +162,5 @@
 
         </center>
     </div>
-
 </body>
 </html>

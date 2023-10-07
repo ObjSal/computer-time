@@ -9,12 +9,16 @@ let app = {
     totalUsedTime: 0,
     timerId: 0,
     maxHoursPerWeek: 10*60*60000, // 10HRS;  min * milliseconds = hours
+
+    // Temp helper globals
+    temp_qrcode_dataURL: null
 };
 
 const MONGO = {
     CLUSTER_NAME: "mongodb-atlas",
     DATABASE_NAME: "computer-time",
     LOG_COLLECTION_NAME: "log",
+    TASKS_COLLECTION_NAME: "tasks",
     USER_DATA_COLLECTION_NAME: "user_data"
 };
 
@@ -40,13 +44,59 @@ const TaskStatus = {
 
 class Task {
     constructor(desc, sats, qrcode, status = TaskStatus.OPEN) {
+        this._id = Realm.BSON.ObjectID(Realm.BSON.ObjectID.generate());
         this.timestamp = new Date();
         this.description = desc;
-        this.reward_sats = sats;
-        this.reward_qrcode = qrcode;
+        this.sats = sats;
+        this.qrcode = qrcode;
         this.status = status;
-        this.assignee = null;
+        this.owner_id = null;
     }
+}
+
+async function createTask() {
+    let desc = document.getElementById("task_description").value;
+    let sats = parseInt(document.getElementById("task_reward_sats").value);
+    let qrcode = app.temp_qrcode_dataURL;
+
+    let newTask = new Task(desc, sats, qrcode);
+
+    // TODO(sal): Not safe, use backend functions.
+    //            storing image as dataURL in the DB :/
+    await app.tasks.insertOne(newTask);
+}
+
+function resizeImage(dataURL, type, width, height, callback) {
+    // Reference: https://imagekit.io/blog/how-to-resize-image-in-javascript/
+
+    let img = document.createElement("img");
+    img.onload = function (event) {
+        let canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        let ctx = canvas.getContext("2d");
+        // ctx.mozImageSmoothingEnabled = false;
+        // ctx.webkitImageSmoothingEnabled = false;
+        // ctx.msImageSmoothingEnabled = false;
+        // ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, 0, 0, width, height);
+        callback(canvas.toDataURL(type));
+    }
+    img.src = dataURL;
+}
+
+function loadTaskQRCodeImage(element) {
+    let file = element.files[0];
+    let reader = new FileReader();
+    reader.onloadend = function() {
+        // 150x150 seems to be good enough for QR Codes
+        resizeImage(reader.result, file.type, 150, 150, (dataURL)=> {
+            // console.log(dataURL);
+            // document.getElementById("test").src = dataURL;
+            app.temp_qrcode_dataURL = dataURL;
+        });
+    }
+    reader.readAsDataURL(file);
 }
 
 async function loginWithApiKey(apiKey) {
@@ -209,6 +259,7 @@ function calculateTotalCompletedTime(logs) {
 function initMongo() {
     app.mongo = app.realm.currentUser.mongoClient(MONGO.CLUSTER_NAME);
     app.log_collection = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.LOG_COLLECTION_NAME);
+    app.tasks = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.TASKS_COLLECTION_NAME);
     app.user_data_collection = app.mongo.db(MONGO.DATABASE_NAME).collection(MONGO.USER_DATA_COLLECTION_NAME);
 }
 
