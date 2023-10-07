@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=800, initial-scale=1.0">
     <link rel="stylesheet" href="style/main.css">
+    <!-- Satoshi Symbol, reference: https://satsymbol.com/fontawesome/-->
+    <script src="https://kit.fontawesome.com/090ca49637.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/realm-web/dist/bundle.iife.js"></script>
     <!-- https://github.com/auth0/jwt-decode/tree/main -->
     <script src="lib/jwt-decode.js"></script>
@@ -15,7 +17,7 @@
     <div id="login">
         <center>
             <h1>Login</h1>
-            <table CELLSPACING=0>
+            <table>
                 <tr>
                     <td>App Id</td>
                     <td><input type="text" id="loginAppId" /></td>
@@ -44,7 +46,7 @@
     <div id="register">
         <center>
             <h1>Register</h1>
-            <table CELLSPACING=0>
+            <table>
                 <tr>
                     <td>App Id</td>
                     <td><input type="text" id="registerAppId" /></td>
@@ -73,7 +75,7 @@
     <div id="setUsername">
         <center>
             <h1>Set A Username</h1>
-            <table CELLSPACING=0>
+            <table>
                 <tr>
                     <td>Username</td>
                     <td><input type="text" id="username" /></td>
@@ -87,8 +89,9 @@
 
     <div id="main">
         <button id="logoutButton" onclick="logout()">Logout</button>
+        <br>
         <center>
-            <table CELLSPACING=0>
+            <table>
                 <tr>
                     <td id="welcome" colspan="2"></td>
                 </tr>
@@ -100,6 +103,18 @@
                     <td colspan="2"><button class="bigButton" id="timerButton" onclick="toggleTimer()">START!</button></td>
                 </tr>
             </table>
+            <br>
+            <table id="tasks">
+                <tr>
+                    <td colspan="4"><b>TASKS</b></td>
+                </tr>
+                <tr>
+                    <th>Date</th>
+                    <th><i class="fak fa-regular"></i> Reward</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                </tr>
+            </table>
         </center>
     </div>
 
@@ -107,18 +122,39 @@
 
     <div id="admin">
         <center>
-            <table CELLSPACING=0>
+            <p>~ ADMIN ~</p>
+            <!-- <table>
                 <tr>
-                    <td colspan="2">ADMIN</td>
+                    <td colspan="2">~ ADMIN ~</td>
                 </tr>
                 <tr>
-                    <!-- <td><button class="bigButton" onclick="fixOldDataUsername()">Fix old data username</button></td><td><input type="text" id="fixUsername" placeholder="username" /></td> -->
+                    <td><button class="bigButton" onclick="fixOldDataUsername()">Fix old data username</button></td><td><input type="text" id="fixUsername" placeholder="username" /></td>
+                </tr>
+            </table> -->
+
+            <table id="admin_tasks">
+                <tr>
+                    <td colspan="5"><b>MANAGE TASKS</b></td>
+                </tr>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th><i class="fak fa-regular"></i> Reward</th>
+                    <th>QRCode Reward</th>
+                    <th>Action</th>
+                </tr>
+                <tr bgcolor="#faebd7">
+                    <td><!-- Date --></td>
+                    <td><input type="text" id="description" /></td>
+                    <td><input type="text" id="reward_sats" /></td>
+                    <td><input type="file" id="reward_qrcode" accept="image/png, image/jpeg" /></td>
+                    <td><button id="createTask" onclick="createTask()">Create</button></td>
                 </tr>
             </table>
             
             <br />
 
-            <table id="times" CELLSPACING=0>
+            <table id="times">
                 <tr>
                     <td colspan="3">TIME REMAINING</td>
                 </tr>

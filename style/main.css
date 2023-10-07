@@ -1,5 +1,12 @@
+table {
+    border: 0.5px solid;
+    padding: 0px;
+    border-spacing: 0px;
+}
+
 th, td {
-    border-style: inset;
+    border: 1px solid;   
+    border-color: black;
     padding: 5px;
     text-align: center;
 }
@@ -11,4 +18,13 @@ th, td {
 
 #logoutButton {
     float: right;
+}
+
+#reward_sats {
+    width:50px;
+    text-align: right;
+}
+
+#reward_qrcode {
+    width:150px;
 }
