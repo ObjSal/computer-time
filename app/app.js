@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 'use strict';
 
 let app = {
@@ -33,6 +35,7 @@ const LogType = {
     STOP: "Stop"
 };
 
+// noinspection JSUnusedGlobalSymbols
 class Log {
     constructor(type) {
         this.owner_id = app.realm.currentUser.id;
@@ -65,7 +68,7 @@ class Task {
 async function createTask() {
     let desc = document.getElementById("task_description").value;
     let sats = parseInt(document.getElementById("task_reward_sats").value);
-    // TODO(sal): upload as binary, ask on forums how to do this from MondoDB Web SDK.
+    // TODO(sal): upload as binary, ask on forums how to do this from MongoDB Web SDK.
     let qrcode = app.temp_qrcode_dataURL;
     // https://www.mongodb.com/docs/manual/reference/method/Binary.createFromBase64/
     // let qrcode = Realm.BSON.Binary.createFromBase64(app.temp_qrcode_base64);
@@ -108,17 +111,17 @@ function showTasks() {
         dateCell.innerHTML = task.timestamp.toLocaleDateString();
         satsCell.innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(task.sats);
         descriptionCell.innerHTML = task.description;
-        if (task.status == TaskStatus.OPEN) {
+        if (task.status === TaskStatus.OPEN) {
             actionCell.innerHTML = '<button onclick=\'startTask("' + task._id + '")\'>Start</button>';
-        } else if (task.status == TaskStatus.STARTED) {
-            if (task.owner_id == app.realm.currentUser.id) {
+        } else if (task.status === TaskStatus.STARTED) {
+            if (task.owner_id === app.realm.currentUser.id) {
                 actionCell.innerHTML = '<button onclick=\'finishTask("' + task._id + '")\'>Finish</button>' + '<br>' +
                     '<button onclick=\'cancelTask("' + task._id + '")\'>Cancel</button>';
             } else {
                 actionCell.innerHTML = 'Started';
             }
-        } else if (task.status == TaskStatus.COMPLETED) {
-            if (task.owner_id == app.realm.currentUser.id) {
+        } else if (task.status === TaskStatus.COMPLETED) {
+            if (task.owner_id === app.realm.currentUser.id) {
                 actionCell.innerHTML = '<button onclick=\'claimRewardTask("' + task._id + '")\'>Show Reward!</button>';
             } else {
                 actionCell.innerHTML = 'Completed';
@@ -167,9 +170,9 @@ async function cancelTask(taskId) {
 }
 
 async function claimRewardTask(taskId) {
-    let task = app.tasks.find((item)=>  item._id.toString() == taskId );
+    let task = app.tasks.find((item)=>  item._id.toString() === taskId );
     let actionCell = document.getElementById(taskId);
-    actionCell.innerHTML = '<img src="' + task.qrcode + '"></img>';
+    actionCell.innerHTML = '<img src="' + task.qrcode + '" alt="QR Code">';
 
     // Enable the code below if we want to hide the claimed rewards
 
@@ -190,7 +193,7 @@ function resizeImage(dataURL, type, width, height, callback) {
     // Reference: https://imagekit.io/blog/how-to-resize-image-in-javascript/
 
     let img = document.createElement("img");
-    img.onload = function (event) {
+    img.onload = function () {
         let canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
@@ -233,25 +236,13 @@ function loadTaskQRCodeImage(element) {
     reader.readAsDataURL(file);
 }
 
-async function loginWithApiKey(apiKey) {
-    const credentials = Realm.Credentials.apiKey(apiKey);
-
-    // Authenticate the user
-    const user = await app.realm.logIn(credentials);
-
-    // `app.realm.currentUser` updates to match the logged in user
-    console.assert(user.id === app.realm.currentUser.id);
-
-    return user;
-}
-
 async function loginWithEmail(email, password) {
     const credentials = Realm.Credentials.emailPassword(email, password);
 
     // Authenticate the user
     const user = await app.realm.logIn(credentials);
 
-    // `app.realm.currentUser` updates to match the logged in user
+    // `app.realm.currentUser` updates to match the logged-in user
     console.assert(user.id === app.realm.currentUser.id);
 
     return user;
@@ -260,7 +251,7 @@ async function loginWithEmail(email, password) {
 function refreshTokenValid() {
     let currentUser = app.realm ? app.realm.currentUser : null;
     if (currentUser && currentUser.isLoggedIn) {
-        let refreshTokenJWT = jwt_decode(currentUser.refreshToken);
+        let refreshTokenJWT = window.jwt_decode(currentUser.refreshToken);
         // Expiration is unix epoch timestamps in seconds
         let expiration = refreshTokenJWT.exp;
         // multiply by 1,000 to convert to milliseconds
@@ -279,7 +270,7 @@ async function login() {
     // TODO(sal): Validate appId, email and password
 
     // Re-initialize the app global instance with the new appId
-    if (app.realm == null || app.realm.id != appId) {
+    if (app.realm == null || app.realm.id !== appId) {
         // This code is not tested as I only have one Realm AppID.
         app.realm = new Realm.App({ id: appId });
     }
@@ -319,7 +310,7 @@ async function register() {
     // TODO(sal): validate appId, email and password
 
     // Re-initialize the app global instance with the new appId
-    if (app.realm == null || app.realm.id != appId) {
+    if (app.realm == null || app.realm.id !== appId) {
         // This code is not tested as I only have one Realm AppID.
         app.realm = new Realm.App({ id: appId });
     }
@@ -377,13 +368,13 @@ function calculateTotalCompletedTime(logs) {
     let startFound = false;
     let startDate = null;
     logs.forEach(log => {
-        if (startFound == false && log.type == LogType.START) {
+        if (startFound === false && log.type === LogType.START) {
             startFound = true;
         }
         if (startFound) {
-            if (log.type == LogType.START) {
+            if (log.type === LogType.START) {
                 startDate = log.timestamp;
-            } else if(log.type == LogType.STOP) {
+            } else if(log.type === LogType.STOP) {
                 totalTime += log.timestamp.getTime() - startDate.getTime();
             }
         }
@@ -407,12 +398,12 @@ function loadLocalStorage() {
     }
 }
 
-// Returns the time lapse since the last log was started
+// Returns the time-lapse since the last log was started
 // If the last log is stopped then it returns 0
 function timeSinceLastLogStarted(logs) {
     if (logs && logs.length > 0) {
         let lastLog = logs[logs.length - 1];
-        if (lastLog.type == LogType.START) {
+        if (lastLog.type === LogType.START) {
             let date = new Date();
             return (date.getTime() - lastLog.timestamp.getTime());
         }
@@ -422,9 +413,9 @@ function timeSinceLastLogStarted(logs) {
 
 function backgroundColorForValue(value) {
     if (value > 0) {
-        return "background-color: chartreuse;";
+        return "chartreuse;";
     } else {
-        return "background-color: crimson;";
+        return "crimson;";
     }
 }
 
@@ -434,7 +425,7 @@ function updateTimeLabel() {
     let timerElement = document.getElementById("timer");
     let sign = timeLeft < 0 ? "-": "";
     timerElement.innerHTML = sign + msToTime(Math.abs(timeLeft));
-    timerElement.style = backgroundColorForValue(timeLeft);
+    timerElement.style.backgroundColor = backgroundColorForValue(timeLeft);
 }
 
 function startTimer() {
@@ -457,7 +448,7 @@ async function toggleTimer() {
     let newType = LogType.START;
     if (app.logs && app.logs.length > 0) {
         let lastLog = app.logs[app.logs.length - 1];
-        newType = lastLog.type == LogType.START ? LogType.STOP : LogType.START;
+        newType = lastLog.type === LogType.START ? LogType.STOP : LogType.START;
     }
 
     // TODO(sal): NOT SAFE! Move to a backend function
@@ -471,18 +462,18 @@ async function toggleTimer() {
 }
 
 function setupTimer() {
-    if (app.logs == null || app.logs.length == 0) {
+    if (app.logs == null || app.logs.length === 0) {
         stopTimer();
         if (app.logs == null) {
-            // Download logs only when logs is null so we're not stuck in an infinite loop
+            // Download logs only when logs is null, so we're not stuck in an infinite loop
             downloadLogsForCurrentUser().then(() => setupTimer())
         }
         return;
     }
     let lastLog = app.logs[app.logs.length - 1];
-    if (lastLog.type == LogType.START) {
+    if (lastLog.type === LogType.START) {
         startTimer();
-    } else if (lastLog.type == LogType.STOP) {
+    } else if (lastLog.type === LogType.STOP) {
         stopTimer();
     }
 }
@@ -525,7 +516,7 @@ async function saveUsername() {
     initMongo();
 
     if (app.realm.currentUser.customData.username == null) {
-        // Create the the user's custom data document
+        // Create the user's custom data document
         await app.user_data_collection.insertOne(
             {
                 owner_id: app.realm.currentUser.id,
@@ -568,10 +559,10 @@ function showMain() {
     // Initialize mongo client and collections
     initMongo();
     setupTimer();
-    setupTasks();
+    setupTasks().then();
 
-    if (app.realm.currentUser.customData.isGlobalAdmin) {
-        showAdmin();
+    if (app.realm.currentUser.customData["isGlobalAdmin"]) {
+        showAdmin().then();
     }
 }
 
@@ -597,7 +588,7 @@ async function showAdmin() {
         let usedTime = totalTime + timeSinceLastLogStarted(logs);
         let timeLeft = app.maxHoursPerWeek - usedTime;
         let sign = timeLeft < 0 ? "-": "";
-        timeCell.style = backgroundColorForValue(timeLeft);
+        timeCell.style.backgroundColor = backgroundColorForValue(timeLeft);
         timeCell.innerHTML = sign + msToTime(Math.abs(timeLeft));
 
         let lastType = LogType.STOP;
@@ -652,7 +643,7 @@ function init() {
 
     let appId = localStorage.getItem("appId");
 
-    if (appId == null || appId == "") {
+    if (appId == null || appId === "") {
         showLogin();
     } else {
         // Initialize the app global instance
