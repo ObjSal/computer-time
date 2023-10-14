@@ -493,6 +493,11 @@ function capitalizeFirstLetter(str) {
 
 function showLogin() {
     document.getElementById("login").style.display = "";
+
+    // populate the AppId from the URL
+
+    let urlParams = new URLSearchParams(window.location.search);
+    document.getElementById("loginAppId").value = urlParams.get("appid");
 }
 
 function showRegister() {
