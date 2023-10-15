@@ -37,3 +37,7 @@ th, td {
     margin-left: auto;
     margin-right: auto;
 }
+
+.adminForm {
+    background-color: #faebd7;
+}
