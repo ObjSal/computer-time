@@ -48,6 +48,7 @@ class Log {
 const TaskStatus = {
     OPEN: "Open",
     STARTED: "Started",
+    PENDING_APPROVAL: "PendingApproval",
     COMPLETED: "Completed",
     CLAIMED: "Claimed",
     CANCELED: "Canceled"
@@ -93,7 +94,7 @@ async function downloadTasks() {
     // Download tasks that are open, started and completed
     // I can filter out tasks that  have been started by other others, but I want to show them to other users.
     // This is still not secure because the QR Codes are always downloaded to local cache
-    let tasks = await app.tasks_collection.find({ status: {$in: [TaskStatus.OPEN, TaskStatus.STARTED, TaskStatus.COMPLETED]} });
+    let tasks = await app.tasks_collection.find({ status: {$in: [TaskStatus.OPEN, TaskStatus.STARTED, TaskStatus.PENDING_APPROVAL, TaskStatus.COMPLETED]} });
     return tasks.reverse();
 }
 
@@ -116,7 +117,8 @@ function showTasks() {
             actionCell.innerHTML = '<button onclick=\'startTask("' + task._id + '")\'>Start</button>';
         } else if (task.status === TaskStatus.STARTED) {
             if (task.owner_id === app.realm.currentUser.id) {
-                actionCell.innerHTML = '<button onclick=\'finishTask("' + task._id + '")\'>Finish</button>' + '<br>' +
+                actionCell.innerHTML =
+                    '<button onclick=\'finishTask("' + task._id + '")\'>Finish</button>' + '<br>' +
                     '<button onclick=\'cancelTask("' + task._id + '")\'>Cancel</button>';
             } else {
                 actionCell.innerHTML = 'Started by...';
@@ -124,6 +126,14 @@ function showTasks() {
                 app.user_data_collection.findOne({ owner_id: task.owner_id }).then(userData => {
                     actionCell.innerHTML = 'Started by ' + capitalizeFirstLetter(userData.username);
                 });
+            }
+        } else if (task.status === TaskStatus.PENDING_APPROVAL) {
+            if (app.realm.currentUser.customData["isGlobalAdmin"]) {
+                actionCell.innerHTML = '<button onclick=\'approveTask("' + task._id + '")\'>Approve!</button>';
+            } else if (task.owner_id === app.realm.currentUser.id) {
+                actionCell.innerHTML = 'Ask for approval...';
+            } else {
+                actionCell.innerHTML = 'Pending approval...';
             }
         } else if (task.status === TaskStatus.COMPLETED) {
             if (task.owner_id === app.realm.currentUser.id) {
@@ -152,7 +162,26 @@ async function startTask(taskId) {
 }
 
 async function finishTask(taskId) {
-    console.log('Finish Task', taskId);
+    await app.tasks_collection.updateOne(
+        { _id: new Realm.BSON.ObjectID(taskId) },
+        { $set: {
+                status: TaskStatus.PENDING_APPROVAL
+            }}
+    );
+
+    // TODO(sal): notify admins that a task is waiting approval
+
+    // TODO(sal): do proper updating of table and cached collection
+    location.reload();
+}
+
+async function approveTask(taskId) {
+   // TODO(sal): Not Safe! Move this function to a cloud function
+
+    if (!app.realm.currentUser.customData["isGlobalAdmin"]) {
+        return;
+    }
+
     await app.tasks_collection.updateOne(
         { _id: new Realm.BSON.ObjectID(taskId) },
         { $set: {
