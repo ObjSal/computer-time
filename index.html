@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--suppress HtmlFormInputWithoutLabel -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -15,154 +16,142 @@
 </head>
 <body>
     
-    <div id="login">
-        <center>
-            <h1>Login</h1>
-            <table>
-                <tr>
-                    <td>App Id</td>
-                    <td><input type="text" id="loginAppId" /></td>
-                </tr>
-                <tr>
-                    <td>Email</td>
-                    <td><input type="text" id="loginEmail" /></td>
-                </tr>
-                <tr>
-                    <td>Password</td>
-                    <td><input type="password" id="loginPassword" /></td>
-                </tr>
-                <tr>
-                    <td colspan="2"><button class="bigButton" id="loginButton" onclick="login()">LOGIN</button></td>
-                </tr>
-                <tr>
-                    <td colspan="2"><button class="bigButton" id="forgotPasswordButton" onclick="forgotPassword()">Forgot Password</button></td>
-                </tr>
-                <tr>
-                    <td colspan="2"><button class="bigButton" id="showRegisterButton" onclick="showRegister()">Register</button></td>
-                </tr>
-            </table>
-        </center>
+    <div id="login" class="centerParent">
+        <h1>Login</h1>
+        <table class="centerChild">
+            <tr>
+                <td>App Id</td>
+                <td><input type="text" id="loginAppId" /></td>
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td><input type="text" id="loginEmail" /></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><input type="password" id="loginPassword" /></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="bigButton" id="loginButton" onclick="login()">LOGIN</button></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="bigButton" id="forgotPasswordButton" onclick="forgotPassword()">Forgot Password</button></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="bigButton" id="showRegisterButton" onclick="showRegister()">Register</button></td>
+            </tr>
+        </table>
     </div>
 
-    <div id="register">
-        <center>
-            <h1>Register</h1>
-            <table>
-                <tr>
-                    <td>App Id</td>
-                    <td><input type="text" id="registerAppId" /></td>
-                </tr>
-                <tr>
-                    <td>Email</td>
-                    <td><input type="text" id="registerEmail" /></td>
-                </tr>
-                <tr>
-                    <td>Password</td>
-                    <td><input type="password" id="registerPassword" /></td>
-                </tr>
-                <tr>
-                    <td colspan="2"><button class="bigButton" id="registerButton" onclick="register()">REGISTER</button></td>
-                </tr>
-            </table>
-        </center>
+    <div id="register" class="centerParent">
+        <h1>Register</h1>
+        <table class="centerChild">
+            <tr>
+                <td>App Id</td>
+                <td><input type="text" id="registerAppId" /></td>
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td><input type="text" id="registerEmail" /></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><input type="password" id="registerPassword" /></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="bigButton" id="registerButton" onclick="register()">REGISTER</button></td>
+            </tr>
+        </table>
     </div>
 
-    <div id="checkEmail">
-        <center>
-            <h1>Check your Email</h1>
-            <p>Open the confirmation link sent to your email in this browser.</p>
-        </center></div>
-
-    <div id="setUsername">
-        <center>
-            <h1>Set A Username</h1>
-            <table>
-                <tr>
-                    <td>Username</td>
-                    <td><input type="text" id="username" /></td>
-                </tr>
-                <tr>
-                    <td colspan="2"><button class="bigButton" id="saveUsernameButton" onclick="saveUsername()">SAVE</button></td>
-                </tr>
-            </table>
-        </center>
+    <div id="checkEmail" class="centerParent">
+        <h1>Check your Email</h1>
+        <p>Open the confirmation link sent to your email in this browser.</p>
     </div>
 
-    <div id="main">
+    <div id="setUsername" class="centerParent">
+        <h1>Set A Username</h1>
+        <table class="centerChild">
+            <tr>
+                <td>Username</td>
+                <td><input type="text" id="username" /></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="bigButton" id="saveUsernameButton" onclick="saveUsername()">SAVE</button></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="main" class="centerParent">
         <button id="logoutButton" onclick="logout()">Logout</button>
         <br>
         <br>
-        <center>
-            <table>
-                <tr>
-                    <td id="welcome" colspan="2"></td>
-                </tr>
-                <tr>
-                    <td>Time left:</td>
-                    <td id="timer"></td>
-                </tr>
-                <tr>
-                    <td colspan="2"><button class="bigButton" id="timerButton" onclick="toggleTimer()">START!</button></td>
-                </tr>
-            </table>
-            <br>
-            <table id="tasks">
-                <tr>
-                    <td colspan="4"><b>TASKS</b></td>
-                </tr>
-                <tr>
-                    <th>Date</th>
-                    <th><i class="fak fa-regular"></i> Reward</th>
-                    <th>Description</th>
-                    <th>Action</th>
-                </tr>
-            </table>
-        </center>
+        <table class="centerChild">
+            <tr>
+                <td id="welcome" colspan="2"></td>
+            </tr>
+            <tr>
+                <td>Time left:</td>
+                <td id="timer"></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="bigButton" id="timerButton" onclick="toggleTimer()">START!</button></td>
+            </tr>
+        </table>
+        <br>
+        <table id="tasks" class="centerChild">
+            <tr>
+                <td colspan="4"><b>TASKS</b></td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <th><i class="fak fa-regular"></i> Reward</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </table>
     </div>
 
     <br />
 
-    <div id="admin">
-        <center>
-            <p>~ ADMIN ~</p>
-            <!-- <table>
-                <tr>
-                    <td colspan="2">~ ADMIN ~</td>
-                </tr>
-                <tr>
-                    <td><button class="bigButton" onclick="fixOldDataUsername()">Fix old data username</button></td><td><input type="text" id="fixUsername" placeholder="username" /></td>
-                </tr>
-            </table> -->
+    <div id="admin" class="centerParent">
+        <p>~ ADMIN ~</p>
+        <!-- <table>
+            <tr>
+                <td colspan="2">~ ADMIN ~</td>
+            </tr>
+            <tr>
+                <td><button class="bigButton" onclick="fixOldDataUsername()">Fix old data username</button></td><td><input type="text" id="fixUsername" placeholder="username" /></td>
+            </tr>
+        </table> -->
 
-            <table id="admin_tasks">
-                <tr>
-                    <td colspan="5"><b>MANAGE TASKS</b></td>
-                </tr>
-                <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th><i class="fak fa-regular"></i> Reward</th>
-                    <th>QRCode Reward</th>
-                    <th>Action</th>
-                </tr>
-                <tr bgcolor="#faebd7">
-                    <td><!-- Date --></td>
-                    <td><input type="text" id="task_description" /></td>
-                    <td><input type="text" id="task_reward_sats" /></td>
-                    <td><input type="file" id="task_reward_qrcode" accept="image/png, image/jpeg" onchange="loadTaskQRCodeImage(this)" /></td>
-                    <td><button id="createTask" onclick="createTask()">Create</button></td>
-                </tr>
-            </table>
-            
-            <br />
+        <table id="admin_tasks" class="centerChild">
+            <tr>
+                <td colspan="5"><b>MANAGE TASKS</b></td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th><i class="fak fa-regular"></i> Reward</th>
+                <th>QRCode Reward</th>
+                <th>Action</th>
+            </tr>
+            <tr bgcolor="#faebd7">
+                <td><!-- Date --></td>
+                <td><input type="text" id="task_description" /></td>
+                <td><input type="text" id="task_reward_sats" /></td>
+                <td><input type="file" id="task_reward_qrcode" accept="image/png, image/jpeg" onchange="loadTaskQRCodeImage(this)" /></td>
+                <td><button id="createTask" onclick="createTask()">Create</button></td>
+            </tr>
+        </table>
 
-            <table id="times">
-                <tr>
-                    <td colspan="3">TIME REMAINING</td>
-                </tr>
-            </table>
+        <br />
 
-        </center>
+        <table id="times" class="centerChild">
+            <tr>
+                <td colspan="3">TIME REMAINING</td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>
