@@ -399,6 +399,12 @@ function initMongo() {
 
 function loadLocalStorage() {
     let appId = localStorage.getItem("appId");
+    let appIdFromURL = (new URLSearchParams(window.location.search)).get("appId");
+
+    // URL params overwrites local cache
+    if (appIdFromURL) {
+        appId = appIdFromURL;
+    }
 
     if (appId) {
         document.getElementById("loginAppId").value = appId;
@@ -492,11 +498,6 @@ function capitalizeFirstLetter(str) {
 
 function showLogin() {
     document.getElementById("login").style.display = "";
-
-    // populate the AppId from the URL
-
-    let urlParams = new URLSearchParams(window.location.search);
-    document.getElementById("loginAppId").value = urlParams.get("appid");
 }
 
 function showRegister() {
