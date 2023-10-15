@@ -112,19 +112,27 @@ function showTasks() {
         satsCell.innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(task.sats);
         descriptionCell.innerHTML = task.description;
         if (task.status === TaskStatus.OPEN) {
+            // Task is open and unassigned
             actionCell.innerHTML = '<button onclick=\'startTask("' + task._id + '")\'>Start</button>';
         } else if (task.status === TaskStatus.STARTED) {
             if (task.owner_id === app.realm.currentUser.id) {
                 actionCell.innerHTML = '<button onclick=\'finishTask("' + task._id + '")\'>Finish</button>' + '<br>' +
                     '<button onclick=\'cancelTask("' + task._id + '")\'>Cancel</button>';
             } else {
-                actionCell.innerHTML = 'Started';
+                actionCell.innerHTML = 'Started by...';
+
+                app.user_data_collection.findOne({ owner_id: task.owner_id }).then(userData => {
+                    actionCell.innerHTML = 'Started by ' + capitalizeFirstLetter(userData.username);
+                });
             }
         } else if (task.status === TaskStatus.COMPLETED) {
             if (task.owner_id === app.realm.currentUser.id) {
                 actionCell.innerHTML = '<button onclick=\'claimRewardTask("' + task._id + '")\'>Show Reward!</button>';
             } else {
-                actionCell.innerHTML = 'Completed';
+                actionCell.innerHTML = 'Completed by...';
+                app.user_data_collection.findOne({ owner_id: task.owner_id }).then(userData => {
+                    actionCell.innerHTML = 'Completed by ' + capitalizeFirstLetter(userData.username);
+                });
             }
         }
     }
@@ -555,7 +563,7 @@ function showMain() {
     document.getElementById("setUsername").style.display = "none";
     // Show Main elements
     document.getElementById("main").style.display = "";
-    document.getElementById("welcome").innerHTML = "<b>Welcome " + app.realm.currentUser.customData.username + "!</b>"
+    document.getElementById("welcome").innerHTML = "<b>Welcome " + capitalizeFirstLetter(app.realm.currentUser.customData.username) + "!</b>"
     // Initialize mongo client and collections
     initMongo();
     setupTimer();
