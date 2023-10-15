@@ -28,3 +28,12 @@ th, td {
 #reward_qrcode {
     width:150px;
 }
+
+.centerParent {
+    text-align: center;
+}
+
+.centerChild {
+    margin-left: auto;
+    margin-right: auto;
+}
