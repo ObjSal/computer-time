@@ -91,10 +91,9 @@ async function downloadTasks() {
     date.setDate(date.getDate() - (date.getDay() + 6) % 7);
     date.setHours(0, 0, 0, 0);
 
-    // Download tasks that are open, started and completed
     // I can filter out tasks that  have been started by other others, but I want to show them to other users.
-    // This is still not secure because the QR Codes are always downloaded to local cache
-    let tasks = await app.tasks_collection.find({ status: {$in: [TaskStatus.OPEN, TaskStatus.STARTED, TaskStatus.PENDING_APPROVAL, TaskStatus.COMPLETED]} });
+    // TODO(sal): convert this to a cloud function that doesn't return reward QR codes.
+    let tasks = await app.tasks_collection.find({ status: {$in: [TaskStatus.OPEN, TaskStatus.STARTED, TaskStatus.PENDING_APPROVAL, TaskStatus.COMPLETED, TaskStatus.CLAIMED]} });
     return tasks.reverse();
 }
 
@@ -137,13 +136,20 @@ function showTasks() {
             }
         } else if (task.status === TaskStatus.COMPLETED) {
             if (task.owner_id === app.realm.currentUser.id) {
-                actionCell.innerHTML = '<button onclick=\'claimRewardTask("' + task._id + '")\'>Show Reward!</button>';
+                actionCell.innerHTML = '<button onclick=\'claimTaskReward("' + task._id + '")\'>Claim Reward!</button>';
             } else {
                 actionCell.innerHTML = 'Completed by...';
                 app.user_data_collection.findOne({ owner_id: task.owner_id }).then(userData => {
                     actionCell.innerHTML = 'Completed by ' + capitalizeFirstLetter(userData.username);
                 });
             }
+        } else if (task.status === TaskStatus.CLAIMED) {
+            let innerHTML = 'Reward Claimed'
+
+            if (task.owner_id === app.realm.currentUser.id) {
+                innerHTML += '<br>' + '<button onclick=\'showTaskReward("' + task._id + '")\'>Show Reward</button>';
+            }
+            actionCell.innerHTML = innerHTML;
         }
     }
 }
@@ -206,19 +212,22 @@ async function cancelTask(taskId) {
     location.reload();
 }
 
-async function claimRewardTask(taskId) {
+function showTaskReward(taskId) {
     let task = app.tasks.find((item)=>  item._id.toString() === taskId );
     let actionCell = document.getElementById(taskId);
     actionCell.innerHTML = '<img src="' + task.qrcode + '" alt="QR Code">';
+}
 
-    // Enable the code below if we want to hide the claimed rewards
+async function claimTaskReward(taskId) {
+    showTaskReward(taskId);
 
-    // await app.tasks_collection.updateOne(
-    //     { _id: new Realm.BSON.ObjectID(taskId) },
-    //     { $set: {
-    //             status: TaskStatus.CLAIMED
-    //         }}
-    // );
+    // Mark task as claimed but don't refresh because users are scanning the code.
+    await app.tasks_collection.updateOne(
+        { _id: new Realm.BSON.ObjectID(taskId) },
+        { $set: {
+                status: TaskStatus.CLAIMED
+            }}
+    );
 }
 
 async function setupTasks() {
