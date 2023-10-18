@@ -11,6 +11,22 @@
     <script src="https://unpkg.com/realm-web/dist/bundle.iife.js"></script>
     <!-- https://github.com/auth0/jwt-decode/tree/main -->
     <script src="lib/jwt-decode.js"></script>
+    <script src="app/utils/image.js" ></script>
+    <script src="app/utils/string.js" ></script>
+    <script src="app/utils/date.js" ></script>
+    <script src="app/utils/localstorage.js" ></script>
+    <script src="app/api/logs.js" ></script>
+    <script src="app/api/realm.js" ></script>
+    <script src="app/api/user.js" ></script>
+    <script src="app/api/tasks.js" ></script>
+    <script src="app/ui/password.js" ></script>
+    <script src="app/ui/tasks.js" ></script>
+    <script src="app/ui/logs.js" ></script>
+    <script src="app/ui/admin.js" ></script>
+    <script src="app/ui/main.js" ></script>
+    <script src="app/ui/login.js" ></script>
+    <script src="app/ui/profile.js" ></script>
+    <script src="app/ui/register.js" ></script>
     <script src="app/app.js" defer></script>
     <title>Computer time</title>
 </head>
@@ -32,13 +48,13 @@
                 <td><input type="password" id="loginPassword" /></td>
             </tr>
             <tr>
-                <td colspan="2"><button class="bigButton" id="loginButton" onclick="login()">LOGIN</button></td>
+                <td colspan="2"><button class="bigButton" id="loginButton" onclick="LoginUI.login()">LOGIN</button></td>
             </tr>
             <tr>
-                <td colspan="2"><button class="bigButton" id="forgotPasswordButton" onclick="forgotPassword()">Forgot Password</button></td>
+                <td colspan="2"><button class="bigButton" id="forgotPasswordButton" onclick="PasswordUI.showForgotPassword()">Forgot Password</button></td>
             </tr>
             <tr>
-                <td colspan="2"><button class="bigButton" id="showRegisterButton" onclick="showRegister()">Register</button></td>
+                <td colspan="2"><button class="bigButton" id="showRegisterButton" onclick="RegisterUI.showRegister()">Register</button></td>
             </tr>
         </table>
     </div>
@@ -59,7 +75,7 @@
                 <td><input type="password" id="registerPassword" /></td>
             </tr>
             <tr>
-                <td colspan="2"><button class="bigButton" id="registerButton" onclick="register()">REGISTER</button></td>
+                <td colspan="2"><button class="bigButton" id="registerButton" onclick="RegisterUI.register()">REGISTER</button></td>
             </tr>
         </table>
     </div>
@@ -77,13 +93,13 @@
                 <td><input type="text" id="username" /></td>
             </tr>
             <tr>
-                <td colspan="2"><button class="bigButton" id="saveUsernameButton" onclick="saveUsername()">SAVE</button></td>
+                <td colspan="2"><button class="bigButton" id="saveUsernameButton" onclick="ProfileUI.saveUsername()">SAVE</button></td>
             </tr>
         </table>
     </div>
 
     <div id="main" class="centerParent">
-        <button id="logoutButton" onclick="logout()">Logout</button>
+        <button id="logoutButton" onclick="LoginUI.logout()">Logout</button>
         <br>
         <br>
         <table class="centerChild">
@@ -95,7 +111,7 @@
                 <td id="timer"></td>
             </tr>
             <tr>
-                <td colspan="2"><button class="bigButton" id="timerButton" onclick="toggleTimer()">START!</button></td>
+                <td colspan="2"><button class="bigButton" id="timerButton" onclick="LogsUI.toggleTimer()">START!</button></td>
             </tr>
         </table>
         <br>
@@ -140,8 +156,8 @@
                 <td><!-- Date --></td>
                 <td><input type="text" id="task_description" /></td>
                 <td><input type="text" id="task_reward_sats" /></td>
-                <td><input type="file" id="task_reward_qrcode" accept="image/png, image/jpeg" onchange="loadTaskQRCodeImage(this)" /></td>
-                <td><button id="createTask" onclick="createTask()">Create</button></td>
+                <td><input type="file" id="task_reward_qrcode" accept="image/png, image/jpeg" onchange="TasksUI.loadTaskQRCodeImage(this)" /></td>
+                <td><button id="createTask" onclick="TasksUI.createTask()">Create</button></td>
             </tr>
         </table>
 
