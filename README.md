@@ -187,14 +187,14 @@ Rules allow set appropriate permissions for reading, writing on data, I have the
 ## 5. Setup App Users
 Atlas > App Services > App > App Users > Authentication Providers; **Only** enable Email/Password.
 
-Atlas > App Services > App > App Users > User Settings > Enable Custom User Data; use the following configuration:
+Atlas > App Services > App > App Users > UserAPI Settings > Enable Custom UserAPI Data; use the following configuration:
 ```
 Cluster Name: mongodb-atlas
 Database Name: computer-time
 Collection Name: user_data
-User ID Field: owener_id 
+UserAPI ID Field: owener_id 
 ```
-I use the Custom User Data to store `username` and to set admin privileges using the `isGlobalAdmin` property 
+I use the Custom UserAPI Data to store `username` and to set admin privileges using the `isGlobalAdmin` property 
 
 ### 6. Enable [Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)
 Atlas > App Services > App > Device Sync
