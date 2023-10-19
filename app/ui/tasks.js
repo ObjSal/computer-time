@@ -115,7 +115,7 @@ const TasksUI = (() => {
                     actionCell.innerHTML = 'Started by...';
 
                     UserAPI.findUser({ owner_id: task.owner_id }).then(userData => {
-                        actionCell.innerHTML = 'Started by ' + StringUtils.capitalizeFirstLetter(userData.username);
+                        actionCell.innerHTML = 'Started by ' + userData.username.capitalizeFirstLetter();
                     });
                 }
             } else if (task.status === TasksAPI.Status.PENDING_APPROVAL) {
@@ -132,7 +132,7 @@ const TasksUI = (() => {
                 } else {
                     actionCell.innerHTML = 'Completed by...';
                     UserAPI.findUser({ owner_id: task.owner_id }).then(userData => {
-                        actionCell.innerHTML = 'Completed by ' + StringUtils.capitalizeFirstLetter(userData.username);
+                        actionCell.innerHTML = 'Completed by ' + userData.username.capitalizeFirstLetter();
                     });
                 }
             } else if (task.status === TasksAPI.Status.CLAIMED) {

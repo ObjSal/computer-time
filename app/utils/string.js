@@ -4,9 +4,12 @@
 
 const StringUtils = (() => {
 
-    function capitalizeFirstLetter(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
+    Object.assign(String.prototype, {
+        // Ref: https://stackoverflow.com/a/30259322/877225
+        capitalizeFirstLetter() {
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        }
+    });
 
     function base64ToHex(str) {
         // Reference: https://stackoverflow.com/a/39460727/877225
@@ -21,7 +24,6 @@ const StringUtils = (() => {
     }
 
     return {
-        base64ToHex,
-        capitalizeFirstLetter
+        base64ToHex
     }
 })();

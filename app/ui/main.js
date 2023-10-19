@@ -14,7 +14,7 @@ const MainUI = (() => {
         document.getElementById("setUsername").style.display = "none";
         // Show Main elements
         document.getElementById("main").style.display = "";
-        document.getElementById("welcome").innerHTML = "<b>Welcome " + StringUtils.capitalizeFirstLetter(RealmWrapper.currentUsername()) + "!</b>"
+        document.getElementById("welcome").innerHTML = "<b>Welcome " + RealmWrapper.currentUsername().capitalizeFirstLetter() + "!</b>"
         // Initialize mongo client and collections
         LogsUI.setupTimer();
         TasksUI.setupTasks().then();
