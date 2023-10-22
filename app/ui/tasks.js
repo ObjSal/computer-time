@@ -2,10 +2,11 @@
 
 const TasksUI = (() => {
 
-    let tasks = null;
+    let activeTasks = null;
+    let claimedTasks = null;
 
     function clear() {
-        tasks = null;
+        activeTasks = null;
     }
 
     async function startTask(taskId) {
@@ -59,7 +60,13 @@ const TasksUI = (() => {
     }
 
     function showTaskReward(taskId) {
-        let task = tasks.find((item)=>  item._id.toString() === taskId );
+        // TODO(sal): not secure, move to the backend.
+        let task = activeTasks.find((item)=>  item._id.toString() === taskId);
+        if (!task) {
+            // this function is called from two table sources, account for the two instead of making a call to the
+            // backend
+            task = claimedTasks.find((item)=>  item._id.toString() === taskId);
+        }
         let actionCell = document.getElementById(taskId);
         actionCell.innerHTML = '<img src="' + task.qrcode + '" alt="QR Code">';
     }
@@ -74,8 +81,8 @@ const TasksUI = (() => {
         );
     }
 
-    function showTasks() {
-        let tasksTable = document.getElementById("tasks");
+    function showTasks(tableId, tasks) {
+        let tasksTable = document.getElementById(tableId);
 
         for (const task of tasks) {
             let row = tasksTable.insertRow(-1);
@@ -121,7 +128,7 @@ const TasksUI = (() => {
                     });
                 }
             } else if (task.status === TasksAPI.Status.CLAIMED) {
-                let innerHTML = 'Reward Claimed'
+                let innerHTML = 'Reward Claimed';
 
                 if (task.owner_id === RealmWrapper.currentUserId()) {
                     innerHTML += '<br>' + '<button onclick=\'TasksUI.showTaskReward("' + task._id + '")\'>Show Reward</button>';
@@ -132,8 +139,13 @@ const TasksUI = (() => {
     }
 
     async function setupTasks() {
-        tasks = await TasksAPI.downloadTasks();
-        showTasks();
+        activeTasks = await TasksAPI.downloadActiveTasks();
+        showTasks("tasks", activeTasks);
+    }
+
+    async function showClaimedTasks() {
+        claimedTasks = await TasksAPI.downloadClaimedTasks();
+        showTasks("completedTasks", claimedTasks);
     }
 
     return {
@@ -144,6 +156,7 @@ const TasksUI = (() => {
         approveTask,
         cancelTask,
         showTaskReward,
-        claimTaskReward
+        claimTaskReward,
+        showClaimedTasks
     }
 })();
