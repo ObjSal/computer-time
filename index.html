@@ -126,6 +126,17 @@
                 <th>Action</th>
             </tr>
         </table>
+        <table id="completedTasks" class="centerChild">
+            <tr>
+                <td colspan="4"><b>TASKS</b></td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <th><i class="fak fa-regular"></i> Reward</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </table>
     </div>
 
     <br />
@@ -156,8 +167,8 @@
                 <td><!-- Date --></td>
                 <td><input type="text" id="task_description" /></td>
                 <td><input type="text" id="task_reward_sats" /></td>
-                <td><input type="file" id="task_reward_qrcode" accept="image/png, image/jpeg" onchange="TasksUI.loadTaskQRCodeImage(this)" /></td>
-                <td><button id="createTask" onclick="TasksUI.createTask()">Create</button></td>
+                <td><input type="file" id="task_reward_qrcode" accept="image/png, image/jpeg" onchange="AdminUI.loadTaskQRCodeImage(this)" /></td>
+                <td><button id="createTask" onclick="AdminUI.createTask()">Create</button></td>
             </tr>
         </table>
 
