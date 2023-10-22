@@ -81,6 +81,13 @@ const TasksUI = (() => {
         );
     }
 
+    async function showUsername(cellId, userId) {
+        let cell = document.getElementById(cellId);
+        UserAPI.findUser({ owner_id: userId }).then(userData => {
+            cell.innerHTML = userData.username.capitalizeFirstLetter();
+        });
+    }
+
     function showTasks(tableId, tasks) {
         let tasksTable = document.getElementById(tableId);
 
@@ -89,12 +96,20 @@ const TasksUI = (() => {
             let dateCell = row.insertCell(-1);
             let satsCell = row.insertCell(-1);
             let descriptionCell = row.insertCell(-1);
+            let assigneeCell = row.insertCell(-1);
             let actionCell = row.insertCell(-1);
 
             actionCell.id = task._id;
+            assigneeCell.id = 'assignee.' + task._id;
             dateCell.innerHTML = task.timestamp.toLocaleDateString();
             satsCell.innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(task.sats);
             descriptionCell.innerHTML = task.description;
+
+            if (task.status !== TasksAPI.Status.OPEN) {
+                // if task is assigned, we can show the username
+                assigneeCell.innerHTML = '<button onclick=\'TasksUI.showUsername("' + assigneeCell.id + '", "' + task.owner_id + '")\'>Show</button>';
+            }
+
             if (task.status === TasksAPI.Status.OPEN) {
                 // Task is open and unassigned
                 actionCell.innerHTML = '<button onclick=\'TasksUI.startTask("' + task._id + '")\'>Start</button>';
@@ -104,11 +119,7 @@ const TasksUI = (() => {
                         '<button onclick=\'TasksUI.finishTask("' + task._id + '")\'>Finish</button>' + '<br>' +
                         '<button onclick=\'TasksUI.cancelTask("' + task._id + '")\'>Cancel</button>';
                 } else {
-                    actionCell.innerHTML = 'Started by...';
-
-                    UserAPI.findUser({ owner_id: task.owner_id }).then(userData => {
-                        actionCell.innerHTML = 'Started by ' + userData.username.capitalizeFirstLetter();
-                    });
+                    actionCell.innerHTML = 'Started';
                 }
             } else if (task.status === TasksAPI.Status.PENDING_APPROVAL) {
                 if (RealmWrapper.isGlobalAdmin()) {
@@ -122,10 +133,7 @@ const TasksUI = (() => {
                 if (task.owner_id === RealmWrapper.currentUserId()) {
                     actionCell.innerHTML = '<button onclick=\'TasksUI.claimTaskReward("' + task._id + '")\'>Claim Reward!</button>';
                 } else {
-                    actionCell.innerHTML = 'Completed by...';
-                    UserAPI.findUser({ owner_id: task.owner_id }).then(userData => {
-                        actionCell.innerHTML = 'Completed by ' + userData.username.capitalizeFirstLetter();
-                    });
+                    actionCell.innerHTML = 'Completed';
                 }
             } else if (task.status === TasksAPI.Status.CLAIMED) {
                 let innerHTML = 'Reward Claimed';
@@ -157,6 +165,7 @@ const TasksUI = (() => {
         cancelTask,
         showTaskReward,
         claimTaskReward,
-        showClaimedTasks
+        showClaimedTasks,
+        showUsername
     }
 })();
