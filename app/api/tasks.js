@@ -34,7 +34,7 @@ const TasksAPI = (() => {
         return RealmWrapper.tasks_collection.updateOne({ _id: new Realm.BSON.ObjectID(id) }, update, options);
     }
 
-    async function downloadTasks() {
+    async function downloadActiveTasks() {
         // Set to Monday of this week
         let date = new Date();
         date.setDate(date.getDate() - (date.getDay() + 6) % 7);
@@ -43,7 +43,19 @@ const TasksAPI = (() => {
         // I can filter out tasks that  have been started by other others, but I want to show them to other users.
         // TODO(sal): convert this to a cloud function that doesn't return reward QR codes.
         let tasks = await RealmWrapper.tasks_collection.find({ status: {$in: [Status.OPEN, Status.STARTED, Status.PENDING_APPROVAL,
-                    Status.COMPLETED, Status.CLAIMED]} });
+                    Status.COMPLETED]} });
+        return tasks.reverse();
+    }
+
+    async function downloadClaimedTasks() {
+        // Set to Monday of this week
+        let date = new Date();
+        date.setDate(date.getDate() - (date.getDay() + 6) % 7);
+        date.setHours(0, 0, 0, 0);
+
+        // I can filter out tasks that  have been started by other others, but I want to show them to other users.
+        // TODO(sal): convert this to a cloud function that doesn't return reward QR codes.
+        let tasks = await RealmWrapper.tasks_collection.find({ status: {$in: [Status.CLAIMED]} });
         return tasks.reverse();
     }
 
@@ -52,6 +64,7 @@ const TasksAPI = (() => {
         Status,
         insertTask,
         updateTask,
-        downloadTasks
+        downloadActiveTasks,
+        downloadClaimedTasks
     }
 })();
