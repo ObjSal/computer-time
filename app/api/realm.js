@@ -56,6 +56,7 @@ const RealmWrapper = (() => {
         },
 
         lnbitsWalletAdminKey: function () {
+            // TODO(sal): Find a way to not expose this to the client
             return instance.currentUser.customData["lnbits_wallet_admin_key"];
         },
 
