@@ -59,8 +59,9 @@ const AdminUI = (() => {
             "is_unique": true
         }
 
+        // TODO(sal): add error handling
         FetchUtils.postData(localStorage.getItem('lnbitsHost') + '/withdraw/api/v1/links', data, {'X-API-KEY': RealmWrapper.lnbitsWalletAdminKey()}).then(data => {
-
+            // TODO(sal): add error handling
             TasksAPI.insertTask(new TasksAPI.Task(title, desc, sats, data.id)).then(data => {
                 alert('complete');
             })
