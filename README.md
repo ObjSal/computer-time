@@ -1,14 +1,24 @@
 # Computer Time
 
-A simple site track my kid's computer time, tasks & rewards with bitcoin
+A simple site to track my kid's computer time, tasks & rewards with bitcoin
 
 ## Requirements
+- [LNbits](https://lnbits.com) (I recommend running your own instance)
 - [Atlas Realm MongoDB account](https://realm.mongodb.com)
   - Enable Email Authentication
   - Use your own Realm App ID
 - Use the [demo site](https://objsal.github.io/computer-time/) or host it yourself
 
-## Configuration
+## LNbits Configuration
+LNbits has to be running via https or tor ✔️
+
+1. Create a wallet specific for the reward withdrawals
+2. Copy the Admin key from the wallet. Wallet > API docs > Admin key
+3. Save the Admin key in a `lnbits_wallet_admin_key` property of your user's `user_data` (UI coming soon)
+4. Install the LNURLw extension and active it for your user
+
+
+## MongoDB Configuration
 
 ### 1. Create a Cluster in MongoDB
 Atlas > Data Services > Database > [Create]; name it _**mongodb-atlas**_.
@@ -207,6 +217,7 @@ No compiling necessary, just launch the [demo site](https://objsal.github.io/com
 
 ### Tips
 - Use the `appId` URL param to send your Realm App ID, i.e.: `index.html?appId=<blah-blah-blah>`
+- Use the `lnbitsHost` URL param to send the LNbits hostname, i.e.: `index.html?appId=<blah>&lnbitsHost=https%3A%2F%2Fraspberrypi.local`
 
 ### Notes
 - Atlas, MongoDB and Realm are not free, but they do offer free tiers.
