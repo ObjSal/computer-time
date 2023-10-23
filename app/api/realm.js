@@ -55,6 +55,10 @@ const RealmWrapper = (() => {
             return instance.currentUser.customData["isGlobalAdmin"];
         },
 
+        lnbitsWalletAdminKey: function () {
+            return instance.currentUser.customData["lnbits_wallet_admin_key"];
+        },
+
         loginWithEmail: async function (email, password) {
             const user = await instance.logIn(Realm.Credentials.emailPassword(email, password));
             this.initMongo();
