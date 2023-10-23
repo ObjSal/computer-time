@@ -8,6 +8,7 @@ const LoginUI = (() => {
 
     async function login() {
         let appId = document.getElementById("loginAppId").value;
+        let lnbitsHost = document.getElementById("lnbitsHost").value;
         let email = document.getElementById("loginEmail").value;
         let password = document.getElementById("loginPassword").value;
 
@@ -15,8 +16,9 @@ const LoginUI = (() => {
 
         // Re-initialize realm
         RealmWrapper.init(appId);
-        // Save the AppId
+        // Save the AppId & LNbits hostname
         localStorage.setItem("appId", appId);
+        localStorage.setItem("lnbitsHost", lnbitsHost);
 
         try {
             await RealmWrapper.loginWithEmail(email, password);

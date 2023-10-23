@@ -68,7 +68,14 @@ const TasksUI = (() => {
             task = claimedTasks.find((item)=>  item._id.toString() === taskId);
         }
         let actionCell = document.getElementById(taskId);
-        actionCell.innerHTML = '<img src="' + task.qrcode + '" alt="QR Code">';
+        if (task['qrcode']) {
+            // Legacy, not used anymore
+            actionCell.innerHTML = '<img src="' + task['qrcode'] + '" alt="QR Code">';
+        } else {
+            // get QRCode directly from lnbits
+            actionCell.innerHTML = '<img src="' + localStorage.getItem('lnbitsHost')  + '/withdraw/img/' + task.lnbits_withdraw_id + '" alt="LNbits QR Code">';
+        }
+
     }
 
     async function claimTaskReward(taskId) {

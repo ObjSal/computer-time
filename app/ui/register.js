@@ -3,6 +3,7 @@
 const RegisterUI = (() => {
     async function register() {
         let appId = document.getElementById("registerAppId").value;
+        let lnbitsHost = document.getElementById("registerLnbitsHost").value;
         let email = document.getElementById("registerEmail").value;
         let password = document.getElementById("registerPassword").value;
 
@@ -12,6 +13,7 @@ const RegisterUI = (() => {
         RealmWrapper.init(appId);
         // Save the AppId
         localStorage.setItem("appId", appId);
+        localStorage.setItem("lnbitsHost", lnbitsHost);
 
         try {
             await RealmWrapper.registerUser({ email, password });

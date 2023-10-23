@@ -12,12 +12,13 @@ const TasksAPI = (() => {
     }
 
     class Task {
-        constructor(desc, sats, qrcode, status = Status.OPEN) {
+        constructor(title, desc, sats, lnbitsWithdrawId, status = Status.OPEN) {
             this._id = Realm.BSON.ObjectID(Realm.BSON.ObjectID.generate());
             this.timestamp = new Date();
+            this.title = title;
             this.description = desc;
             this.sats = sats;
-            this.qrcode = qrcode;
+            this.lnbits_withdraw_id = lnbitsWithdrawId;
             this.status = status;
             this.owner_id = null;
         }
