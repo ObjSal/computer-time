@@ -25,14 +25,15 @@ const TasksAPI = (() => {
     }
 
     async function insertTask(task) {
-        // TODO(sal): Not safe, use backend functions.
-        //            storing image as dataURL in the DB :/
-        //            image/qrcode is also not protected
         return RealmWrapper.tasks_collection.insertOne(task);
     }
 
     async function updateTask(id, update, options = {}) {
         return RealmWrapper.tasks_collection.updateOne({ _id: new Realm.BSON.ObjectID(id) }, update, options);
+    }
+
+    async function deleteTask(task) {
+        return RealmWrapper.tasks_collection.deleteOne({_id: task._id});
     }
 
     async function downloadActiveTasks() {
@@ -65,6 +66,7 @@ const TasksAPI = (() => {
         Status,
         insertTask,
         updateTask,
+        deleteTask,
         downloadActiveTasks,
         downloadClaimedTasks
     }

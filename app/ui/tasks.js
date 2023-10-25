@@ -59,14 +59,19 @@ const TasksUI = (() => {
         location.reload();
     }
 
-    function showTaskReward(taskId) {
-        // TODO(sal): not secure, move to the backend.
+    function getTaskById(taskId) {
         let task = activeTasks.find((item)=>  item._id.toString() === taskId);
         if (!task) {
             // this function is called from two table sources, account for the two instead of making a call to the
             // backend
             task = claimedTasks.find((item)=>  item._id.toString() === taskId);
         }
+        return task;
+    }
+
+    function showTaskReward(taskId) {
+        // TODO(sal): not secure, move to the backend.
+        let task = getTaskById(taskId);
         let actionCell = document.getElementById(taskId);
         if (task['qrcode']) {
             // Legacy, not used anymore
@@ -75,7 +80,6 @@ const TasksUI = (() => {
             // get QRCode directly from lnbits
             actionCell.innerHTML = '<img src="' + localStorage.getItem('lnbitsHost')  + '/withdraw/img/' + task.lnbits_withdraw_id + '" alt="LNbits QR Code">';
         }
-
     }
 
     async function claimTaskReward(taskId) {
@@ -95,6 +99,43 @@ const TasksUI = (() => {
         });
     }
 
+    function deleteTask(taskId) {
+        let task = getTaskById(taskId);
+        if (confirm('Delete "' + task.title + '" task?')) {
+
+            if (task.lnbits_withdraw_id) {
+                // First delete the LNURLw
+                let url = localStorage.getItem('lnbitsHost') + '/withdraw/api/v1/links/' + task.lnbits_withdraw_id;
+                FetchUtils.DELETE(url, {'X-API-KEY': RealmWrapper.lnbitsWalletAdminKey()})
+                    .catch(error => {
+                        if (error.message === 'Failed to fetch') {
+                            alert('Go to ' + localStorage.getItem('lnbitsHost') + 'manually to accept cert and try again');
+                        } else {
+                            alert('There was an error, try again.\n' + error.message);
+                        }
+                        throw error;
+                    })
+                    .then(response => {
+                        // If we get 404 it means that the LNURLw has already been deleted, treat it as successful
+                        if (response.status !== 200 && response.status !== 404) {
+                            alert('There was an error creating the LNURLw with http status: ' + response.status);
+                            return;
+                        }
+
+                        // TODO(sal): error handling
+                        TasksAPI.deleteTask(task).then(data => {
+                            location.reload();
+                        });
+                    });
+            } else /* legacy tasks */ {
+                // TODO(sal): error handling
+                TasksAPI.deleteTask(task).then(data => {
+                    location.reload();
+                });
+            }
+        }
+    }
+
     function showTasks(tableId, tasks) {
         let tasksTable = document.getElementById(tableId);
 
@@ -105,6 +146,11 @@ const TasksUI = (() => {
             let descriptionCell = row.insertCell(-1);
             let assigneeCell = row.insertCell(-1);
             let actionCell = row.insertCell(-1);
+
+            if (RealmWrapper.isGlobalAdmin()) {
+                let adminCell = row.insertCell(-1);
+                adminCell.innerHTML = '<button onclick=\'TasksUI.deleteTask("' + task._id + '")\'>Delete</button>';
+            }
 
             actionCell.id = task._id;
             assigneeCell.id = 'assignee.' + task._id;
@@ -155,6 +201,9 @@ const TasksUI = (() => {
 
     async function setupTasks() {
         activeTasks = await TasksAPI.downloadActiveTasks();
+        if (RealmWrapper.isGlobalAdmin()) {
+            document.getElementById('tasks_title_td').colspan += 1;
+        }
         showTasks("tasks", activeTasks);
     }
 
@@ -173,6 +222,7 @@ const TasksUI = (() => {
         showTaskReward,
         claimTaskReward,
         showClaimedTasks,
-        showUsername
+        showUsername,
+        deleteTask
     }
 })();
