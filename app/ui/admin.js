@@ -60,6 +60,8 @@ const AdminUI = (() => {
         }
 
         // TODO(sal): add error handling
+        // TODO(sal): LNbits doesn't check for available balance before creating a new LNURLw... maybe check if I want
+        //            to make it robust
         FetchUtils.postData(localStorage.getItem('lnbitsHost') + '/withdraw/api/v1/links', data, {'X-API-KEY': RealmWrapper.lnbitsWalletAdminKey()}).then(data => {
             // TODO(sal): add error handling
             TasksAPI.insertTask(new TasksAPI.Task(title, desc, sats, data.id)).then(data => {
