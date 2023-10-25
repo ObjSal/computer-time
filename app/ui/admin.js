@@ -4,6 +4,10 @@ const AdminUI = (() => {
 
     async function showAdmin() {
         document.getElementById("admin").style.display = "";
+        await fillTimesTable();
+    }
+
+    async function fillTimesTable() {
         let timesTable = document.getElementById("times");
 
         const users = await UserAPI.findUsers(
@@ -62,11 +66,16 @@ const AdminUI = (() => {
         // TODO(sal): add error handling
         // TODO(sal): LNbits doesn't check for available balance before creating a new LNURLw... maybe check if I want
         //            to make it robust
-        FetchUtils.postData(localStorage.getItem('lnbitsHost') + '/withdraw/api/v1/links', data, {'X-API-KEY': RealmWrapper.lnbitsWalletAdminKey()}).then(data => {
-            // TODO(sal): add error handling
-            TasksAPI.insertTask(new TasksAPI.Task(title, desc, sats, data.id)).then(data => {
-                alert('complete');
-            })
+        FetchUtils.POST(localStorage.getItem('lnbitsHost') + '/withdraw/api/v1/links', data, {'X-API-KEY': RealmWrapper.lnbitsWalletAdminKey()}).then(response => {
+            if (response.status !== 201) {
+                alert('There was an error creating the LNURLw with http status: ' + response.status);
+                return;
+            }
+            response.json().then(data => {
+                TasksAPI.insertTask(new TasksAPI.Task(title, desc, sats, data.id)).then(data => {
+                    alert('complete');
+                });
+            });
         });
     }
 
