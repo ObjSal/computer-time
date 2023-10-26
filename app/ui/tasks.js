@@ -109,7 +109,7 @@ const TasksUI = (() => {
                 FetchUtils.DELETE(url, {'X-API-KEY': RealmWrapper.lnbitsWalletAdminKey()})
                     .catch(error => {
                         if (error.message === 'Failed to fetch') {
-                            alert('Go to ' + localStorage.getItem('lnbitsHost') + 'manually to accept cert and try again');
+                            alert('Go to ' + localStorage.getItem('lnbitsHost') + ' manually to accept cert and try again');
                         } else {
                             alert('There was an error, try again.\n' + error.message);
                         }
@@ -143,6 +143,7 @@ const TasksUI = (() => {
             let row = tasksTable.insertRow(-1);
             let dateCell = row.insertCell(-1);
             let satsCell = row.insertCell(-1);
+            let titleCell = row.insertCell(-1);
             let descriptionCell = row.insertCell(-1);
             let assigneeCell = row.insertCell(-1);
             let actionCell = row.insertCell(-1);
@@ -156,6 +157,7 @@ const TasksUI = (() => {
             assigneeCell.id = 'assignee.' + task._id;
             dateCell.innerHTML = task.timestamp.toLocaleDateString();
             satsCell.innerHTML = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(task.sats);
+            titleCell.innerHTML = task.title ? task.title : "";
             descriptionCell.innerHTML = task.description;
 
             if (task.status !== TasksAPI.Status.OPEN) {
