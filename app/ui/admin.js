@@ -66,7 +66,18 @@ const AdminUI = (() => {
         // TODO(sal): add error handling
         // TODO(sal): LNbits doesn't check for available balance before creating a new LNURLw... maybe check if I want
         //            to make it robust
-        FetchUtils.POST(localStorage.getItem('lnbitsHost') + '/withdraw/api/v1/links', data, {'X-API-KEY': RealmWrapper.lnbitsWalletAdminKey()}).then(response => {
+        let url = localStorage.getItem('lnbitsHost') + '/withdraw/api/v1/links';
+        FetchUtils.POST(url, data, {'X-API-KEY': RealmWrapper.lnbitsWalletAdminKey()})
+            .catch(error => {
+                if (error.message === 'Failed to fetch') {
+                    alert('Go to ' + localStorage.getItem('lnbitsHost') + ' manually to accept cert and try again');
+                    window.open(localStorage.getItem('lnbitsHost'), '_blank');
+                } else {
+                    alert('There was an error, try again.\n' + error.message);
+                }
+                throw error;
+            })
+            .then(response => {
             if (response.status !== 201) {
                 alert('There was an error creating the LNURLw with http status: ' + response.status);
                 return;
